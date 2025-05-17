@@ -12,6 +12,7 @@ declare module "socket.io" {
 const userSocketMap = new Map<string, Socket>();
 export const onConnection = async (socket: Socket) => {
    console.log(socket.userId, "connected");
+   // await markUserActive(socket.userId);
    userSocketMap.set(socket.userId, socket);
 
    // TODO message delete, edit, reply, react etc
@@ -19,7 +20,7 @@ export const onConnection = async (socket: Socket) => {
    socket.on("send-message", async ({ text, roomId, clientMessageId }: { [key: string]: string }) => {
       try {
          const message = await prisma.message.create({
-            data: {                                      
+            data: {
                text,
                userId: socket.userId,
                roomId,
@@ -68,9 +69,9 @@ export const onConnection = async (socket: Socket) => {
    socket.on("message-edit", async ({ id, text, roomId }: { id: string; text: string; roomId: string }) => {
       await prisma.message.update({
          where: { id },
-         data: { text },
+         data: { text, isEdited: true },
       });
-      socket.to(roomId).emit("participant-message-edited", id, text); // TODO implement
+      socket.to(roomId).emit("participant-message-edited", id, text);
    });
    socket.on("message-delete", async ({ id, roomId }: { id: string; roomId: string }) => {
       await prisma.message.update({
@@ -82,10 +83,11 @@ export const onConnection = async (socket: Socket) => {
 
    //* OTHER
    socket.on("ping", async () => {
-      console.log(socket.userId, "marked as active");
+      // console.log(socket.userId, "marked as active");
       await markUserActive(socket.userId);
    });
 
+   //* ROOMS
    socket.on("join-room", async (roomId) => {
       const participants = await prisma.room.findUnique({
          where: { id: roomId },
@@ -98,6 +100,11 @@ export const onConnection = async (socket: Socket) => {
       socket.join(roomId);
       socket.to(roomId).emit("participant-joined-room", socket.userId); // TODO implement
    });
+
+   socket.on("leave-room", async (roomId) => {
+      socket.leave(roomId);
+      socket.to(roomId).emit("participant-left-room", socket.userId); // TODO implement
+   })
 
    //* TYPING
    socket.on("typing-start", async ({ userId, roomId }) => {
@@ -119,5 +126,9 @@ export const onConnection = async (socket: Socket) => {
       console.log(socket.userId, "disconnected");
       userSocketMap.delete(socket.userId);
       await deleteUserActive(socket.userId);
+
+      socket.rooms.forEach(roomId => {
+         socket.to(roomId).emit("participant-disconnected", socket.userId)
+      })
    });
 };

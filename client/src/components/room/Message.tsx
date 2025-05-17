@@ -1,5 +1,7 @@
 import type { Message } from '@/types'
 import { AvatarImg } from './Avatar'
+import { getTime } from '@/lib/dates'
+import {twMerge as tw } from 'tailwind-merge'
 
 export default function Message({ message }: { message: Message }) {
    return (
@@ -14,14 +16,10 @@ export default function Message({ message }: { message: Message }) {
                style={{ color: message.user.avatarColor }}
                className="font-semibold"
             >{message.user.name}</h3>
-            <p className="-mt-0.5 pr-10">{message.text}</p>
+            <p className={tw("-mt-0.5 pr-10", message.isEdited && 'pr-17.5')}>{message.text}</p>
             <span className="absolute bottom-1 right-1.5 text-sm text-black/80">
-               {new Date(message.createdAt).toLocaleTimeString('en-US', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                  hour12: false,
-               })}
-               {message.isEdited && <span className='text-[10px]'>edited</span>}
+               {getTime(message.createdAt)}
+               {message.isEdited && <span className='text-[10px] ml-0.5'>edited</span>}
             </span>
          </div>
       </div>

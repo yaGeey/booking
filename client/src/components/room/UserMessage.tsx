@@ -4,7 +4,7 @@ import type { LocalMessage, Message } from '@/types'
 import { Tooltip } from 'react-tooltip'
 import { getTime } from '@/lib/dates';
 import { useState } from 'react';
-import type { Socket } from 'socket.io-client';
+import { twMerge as tw } from 'tailwind-merge'
 
 export function UserMessageLocal({ msg, status }: { msg: LocalMessage, status: 'pending' | 'error' }) {
    return (
@@ -39,10 +39,10 @@ export function UserMessage({ msg, onDelete, onEdit }: { msg: Message, onDelete:
             onContextMenu={handleContextMenu}
             style={{ cursor: 'context-menu' }}
          >
-            <p className="-mt-0.5 pr-14 ">{msg.text}</p>
+            <p className={tw("-mt-0.5 pr-14.5", msg.isEdited && 'pr-22')}>{msg.text}</p>
             <span className="absolute bottom-1 right-1.5 text-sm text-black/80 flex items-center gap-1.5">
                {getTime(msg.createdAt)}
-               {msg.isEdited && <span className='text-[10px]'>edited</span>}
+               {msg.isEdited && <span className='text-[10px] self-end -ml-0.5'>edited</span>}
                <CheckMark
                   width={12} height={12}
                   fill={msg.isViewed ? 'blue' : '#000'}
