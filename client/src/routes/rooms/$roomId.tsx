@@ -45,7 +45,7 @@ function RouteComponent() {
          isLocal: false,
       })),
    )
-   const [onlineUsers, setOnlineUsers] = useImmer<Array<string>>([me.id])
+   const [onlineUsers, setOnlineUsers] = useImmer<Array<string>>([me.id]) // TODO not working correctly sockets + add fetch from redis idk how but add it 
    const [typingUsers, setTypingUsers] = useImmer<Array<string>>([])
    const [scrollTrigger, setScrollTrigger] = useState(false)
    const [error, setError] = useState<string>('')
@@ -110,7 +110,7 @@ function RouteComponent() {
          'participant-message-edited': (messageId: string, text: string) => { handleMessageEdit(messageId, text) },
          'participant-message-deleted': (messageId: string) => { handleMessageDelete(messageId) },
 
-         'paricipant-joined-room': (userId: string) => { setOnlineUsers((d) => { d.push(userId) }) },
+         'participant-joined-room': (userId: string) => { console.log(userId); setOnlineUsers((d) => { d.push(userId) }) },
          'participant-left-room': (userId: string) => {
             setOnlineUsers((d) => {
                const i = d.findIndex((u) => u === userId);
