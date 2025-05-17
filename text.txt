@@ -1,0 +1,8 @@
+[
+   // two are same messages by sender, one after success send confirmation
+   {msg: LocalMessage, isLocal: true, status: 'pending'|'error'} 
+   {msg: Message, isLocal: false}
+
+   // sent by others
+   {msg: Message, isLocal: false},
+]

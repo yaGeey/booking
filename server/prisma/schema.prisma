@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String          @id @default(uuid())
+  name        String
+  email       String          @unique
+  role        Role            @default(USER)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  avatar      String?
+  avatarColor String
+  password    String?
+  salt        String?
+  provider    oAuthProviders?
+  providerId  String?         @unique
+  lastSeen    DateTime?       @default(now())
+
+  ownedRooms       Room[]             @relation("Owned")
+  rooms            Room[]
+  messages         Message[]
+  PasswordResetPin PasswordResetPin[]
+  viewedMessages   Message[]          @relation("MessageViewed") // TODO delete after week with cronjob
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum oAuthProviders {
+  discord
+  google
+}
+
+model Room {
+  id           String    @id @default(uuid())
+  title        String? // can't make it required don't know why, ts error
+  desc         String?
+  isPrivate    Boolean   @default(false)
+  password     String?
+  emailDomains String[]
+  capacity     Int?
+  scheduleAt   DateTime?
+  durationMin  Int?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  messages Message[]
+
+  owner        User   @relation("Owned", fields: [ownerId], references: [id])
+  ownerId      String
+  participants User[]
+}
+
+// isRecurring: z.boolean().optional(), // add
+
+// TODO edit, delete, pin, report, reply!.. react, forward, copy, share
+model Message {
+  id        String   @id @default(uuid())
+  text      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isEdited  Boolean  @default(false) // and this implement
+  isDeleted Boolean  @default(false) // and this implement
+  // isPinned  Boolean @default(false)
+  // isReported Boolean @default(false)
+
+  room   Room   @relation(fields: [roomId], references: [id])
+  roomId String
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  viewedBy User[]    @relation("MessageViewed") // TODO implement this
+  viewedAt DateTime?
+  isViewed Boolean   @default(false)
+}
+
+// model MessageReadBy // TODO to know when the message was read by user
+
+model PasswordResetPin {
+  id        String   @id @default(uuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  pin       String
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  used      Boolean  @default(false)
+}

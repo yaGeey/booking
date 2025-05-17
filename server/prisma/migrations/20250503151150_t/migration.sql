@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Room" ALTER COLUMN "title" DROP NOT NULL;
