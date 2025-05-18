@@ -50,7 +50,7 @@ export const onConnection = async (socket: Socket) => {
          select: { userId: true },
       });
       if (!message) {
-         console.log("Message not found or already viewed", id);
+         console.log("Message not found or already viewed", id); // TODO check for viewed on client
          return socket.emit("error", "Message not found or already viewed");
       }
       const data = await prisma.message.update({
@@ -69,16 +69,51 @@ export const onConnection = async (socket: Socket) => {
    socket.on("message-edit", async ({ id, text, roomId }: { id: string; text: string; roomId: string }) => {
       await prisma.message.update({
          where: { id },
-         data: { text, isEdited: true },
+         data: { text, isEdited: true, lastEditedAt: new Date() },
       });
       socket.to(roomId).emit("participant-message-edited", id, text);
    });
    socket.on("message-delete", async ({ id, roomId }: { id: string; roomId: string }) => {
       await prisma.message.update({
          where: { id },
-         data: { isDeleted: true },
+         data: { isDeleted: true, deletedAt: new Date() },
       });
       socket.to(roomId).emit("participant-message-deleted", id);
+   });
+
+   //* REACTION
+   socket.on("message-reaction", async ({ messageId, content, roomId }: { messageId: string; content: string; roomId: string }) => {
+      const existing = await prisma.reaction.findUnique({
+         where: {
+            messageId_userId: {
+               messageId,
+               userId: socket.userId,
+            },
+         },
+      });
+
+      let reaction;
+      if (existing) {
+         reaction = await prisma.reaction.update({
+            where: {
+               messageId_userId: {
+                  messageId,
+                  userId: socket.userId,
+               },
+            },
+            data: { content },
+         });
+      } else {
+         reaction = await prisma.reaction.create({
+            data: {
+               userId: socket.userId,
+               content,
+               messageId,
+            },
+         });
+      }
+
+      socket.to(roomId).emit("participant-message-reaction", reaction); // TODO implement on client
    });
 
    //* OTHER
@@ -104,7 +139,7 @@ export const onConnection = async (socket: Socket) => {
    socket.on("leave-room", async (roomId) => {
       socket.leave(roomId);
       socket.to(roomId).emit("participant-left-room", socket.userId); // TODO implement
-   })
+   });
 
    //* TYPING
    socket.on("typing-start", async ({ userId, roomId }) => {
@@ -127,8 +162,8 @@ export const onConnection = async (socket: Socket) => {
       userSocketMap.delete(socket.userId);
       await deleteUserActive(socket.userId);
 
-      socket.rooms.forEach(roomId => {
-         socket.to(roomId).emit("participant-disconnected", socket.userId)
-      })
+      socket.rooms.forEach((roomId) => {
+         socket.to(roomId).emit("participant-disconnected", socket.userId);
+      });
    });
 };

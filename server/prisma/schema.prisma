@@ -28,6 +28,9 @@ model User {
   messages         Message[]
   PasswordResetPin PasswordResetPin[]
   viewedMessages   Message[]          @relation("MessageViewed") // TODO delete after week with cronjob
+  reactions        Reaction[]
+  readMessages     MessageReadBy[]
+  MesssageReport   MesssageReport[]
 }
 
 enum Role {
@@ -53,9 +56,8 @@ model Room {
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
 
-  messages Message[]
-
-  owner        User   @relation("Owned", fields: [ownerId], references: [id])
+  messages     Message[]
+  owner        User      @relation("Owned", fields: [ownerId], references: [id])
   ownerId      String
   participants User[]
 }
@@ -64,12 +66,14 @@ model Room {
 
 // TODO edit, delete, pin, report, reply!.. react, forward, copy, share
 model Message {
-  id        String   @id @default(uuid())
-  text      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  isEdited  Boolean  @default(false) // and this implement
-  isDeleted Boolean  @default(false) // and this implement
+  id           String    @id @default(uuid())
+  text         String
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  isEdited     Boolean   @default(false)
+  lastEditedAt DateTime?
+  isDeleted    Boolean   @default(false)
+  deletedAt    DateTime?
   // isPinned  Boolean @default(false)
   // isReported Boolean @default(false)
 
@@ -78,12 +82,17 @@ model Message {
   user   User   @relation(fields: [userId], references: [id])
   userId String
 
-  viewedBy User[]    @relation("MessageViewed") // TODO implement this
-  viewedAt DateTime?
-  isViewed Boolean   @default(false)
-}
+  viewedBy      User[]           @relation("MessageViewed") // TODO implement this
+  viewedAt      DateTime?
+  isViewed      Boolean          @default(false)
+  reactions     Reaction[]
+  MessageReadBy MessageReadBy[] // TODO implement this
+  reports       MesssageReport[] // TODO implement this
 
-// model MessageReadBy // TODO to know when the message was read by user
+  @@index([isViewed])
+  @@index([isDeleted])
+  @@index([roomId])
+}
 
 model PasswordResetPin {
   id        String   @id @default(uuid())
@@ -93,4 +102,47 @@ model PasswordResetPin {
   createdAt DateTime @default(now())
   expiresAt DateTime
   used      Boolean  @default(false)
+}
+
+// TODO bellow - implement
+model Reaction {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  message   Message  @relation(fields: [messageId], references: [id])
+  messageId String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+
+  @@unique([messageId, userId])
+  @@index([messageId])
+  @@index([userId])
+}
+
+model MessageReadBy {
+  id        String   @id @default(uuid())
+  message   Message  @relation(fields: [messageId], references: [id])
+  messageId String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+  // @@index([userId])
+
+  @@unique([messageId, userId])
+  @@index([messageId])
+}
+
+model MesssageReport {
+  id        String   @id @default(uuid())
+  reason    String
+  message   Message  @relation(fields: [messageId], references: [id])
+  messageId String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  createdAt DateTime @default(now())
+  // @@index([messageId])
+  // @@index([userId])
+
+  @@unique([messageId, userId])
 }

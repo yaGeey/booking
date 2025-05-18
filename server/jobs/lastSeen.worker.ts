@@ -7,7 +7,6 @@ TODO по хорошому воркер на BullMQ, але він працює 
 */
 async function updateLastSeen() {
    const userIds = await redis.smembers("active_users");
-   console.log("updateLastSeen", userIds);
    userIds.forEach(async (userId) => {
       const keyExists = await redis.exists(`user:active:${userId}`);
       if (keyExists) return;
