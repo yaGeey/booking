@@ -6,6 +6,7 @@ const config = {
    trailingComma: 'all',
    tabWidth: 3,
    printWidth: 125,
+   semi: false,
 }
 
 export default config

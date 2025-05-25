@@ -2,11 +2,11 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Button, TextField } from '@mui/material'
 import { useEffect, useRef, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
-import type { LocalMessage, MessageMerged, Message as MessageType, Room, RoomWithUsers, SocketError, User } from '@/types'
+import type { LocalMessage, MessageMerged, Message as MessageType, Room, RoomWithUsers, SocketError, SocketResponse, User, ViewedBy } from '@/types'
 import Message from '@/components/room/Message'
 import { UserMessage, UserMessageLocal } from '@/components/room/UserMessage'
 import { getCurrentUserFull } from '@/lib/auth'
-import { socket, socketConnectDev, useSockets } from '@/socket'
+import { socket, socketConnectDev, useSocketEmit, useSockets } from '@/socket'
 import handleMessagePaginataion from '@/components/room/MessagePagination'
 import MessageTextField from '@/components/room/MessageTextField'
 import { useImmer } from 'use-immer';
@@ -84,11 +84,12 @@ function RouteComponent() {
             })
          },
 
-         'your-message-viewed': (messageId: string) => {
+         'your-message-viewed': (messageId: string, viewedBy: ViewedBy[]) => {
             setMessages((draft) => {
                const i = draft.findIndex((msg) => !msg.isLocal && msg.data.id == messageId)
                if (draft[i].isLocal || draft[i].data.isViewed) return
-               draft[i].data.isViewed = true
+               draft[i].data.isViewed = true;
+               draft[i].data.viewedBy = viewedBy;
             })
          },
 
@@ -201,6 +202,19 @@ function RouteComponent() {
       })
    }
 
+   const { emit: msgReportEmit, isPending: isMsgReportPending, error: msgReportError, clearError } = useSocketEmit('message-report')
+   function handleMessageReport(messageId: string) {
+      if (confirm('Are you sure you want to report this message? Reason: other')) {
+         // setMessages((d) => {
+         //    const i = d.findIndex((msg) => !msg.isLocal && msg.data.id == messageId)
+         //    if (d[i].isLocal) return;
+         //    d[i].data.isReported = true;
+         // })
+         // socket.emit('message-report', { id: messageId, reason: 'other' }, (data: SocketResponse) => console.log(data))
+         msgReportEmit({ id: messageId, reason: 'other' }, () => console.log('Message reported successfully'))
+      }
+   }
+
    return (
       <div>
          <header className='fixed top-0 left-0 w-full bg-white z-10 px-2 py-0.5 border-b border-gray-300 shadow-sm flex items-center justify-between'>
@@ -222,6 +236,8 @@ function RouteComponent() {
                   Leave
                </Button>
             </div>
+            {isMsgReportPending && <span className="text-xs text-gray-500">Reporting message...</span>}
+            {msgReportError && <span className="text-xs text-red-500" onClick={()=>clearError()}>{msgReportError.message}</span>}
          </header>
          <main className="w-full flex flex-col p-4 overflow-x-hidden mb-15 mt-10">
             {error && <div>
@@ -252,6 +268,7 @@ function RouteComponent() {
                                     socket.emit('message-delete', { id: msg.data.id, roomId })
                                  }}
                                  onEdit={() => setMsgEditing(msg.data)}
+                                 onReport={() => handleMessageReport(msg.data.id)}
                               />;
                            } else {
                               return <Message key={j} message={msg.data} />;

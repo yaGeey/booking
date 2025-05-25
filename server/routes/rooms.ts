@@ -48,7 +48,12 @@ router.get("/:roomId", async (req: AuthenticatedRequest, res, next) => {
 
       const messages = await prisma.message.findMany({
          where: { roomId, isDeleted: false },
-         include: { user: true, viewedBy: true },
+         include: {
+            user: true,
+            viewedBy: {
+               include: { user: true },
+            },
+         },
          orderBy: { createdAt: "desc" },
          take,
          skip: cursorId ? 1 : 0,

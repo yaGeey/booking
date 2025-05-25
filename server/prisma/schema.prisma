@@ -1,3 +1,4 @@
+// TODO npx prisma migrate dev --name aboba
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
@@ -27,9 +28,9 @@ model User {
   rooms            Room[]
   messages         Message[]
   PasswordResetPin PasswordResetPin[]
-  viewedMessages   Message[]          @relation("MessageViewed") // TODO delete after week with cronjob
+  // viewedMessages   Message[]          @relation("MessageViewed") // TODO delete after week with cronjob
   reactions        Reaction[]
-  readMessages     MessageReadBy[]
+  viewedMessages   MessageViewedBy[]
   MesssageReport   MesssageReport[]
 }
 
@@ -70,24 +71,24 @@ model Message {
   text         String
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+  
   isEdited     Boolean   @default(false)
   lastEditedAt DateTime?
   isDeleted    Boolean   @default(false)
   deletedAt    DateTime?
   // isPinned  Boolean @default(false)
-  // isReported Boolean @default(false)
 
   room   Room   @relation(fields: [roomId], references: [id])
   roomId String
   user   User   @relation(fields: [userId], references: [id])
   userId String
 
-  viewedBy      User[]           @relation("MessageViewed") // TODO implement this
-  viewedAt      DateTime?
-  isViewed      Boolean          @default(false)
-  reactions     Reaction[]
-  MessageReadBy MessageReadBy[] // TODO implement this
-  reports       MesssageReport[] // TODO implement this
+  isViewed  Boolean           @default(false)
+  reactions Reaction[]
+  viewedBy  MessageViewedBy[]
+
+  isReported Boolean          @default(false)
+  reports    MesssageReport[]
 
   @@index([isViewed])
   @@index([isDeleted])
@@ -120,7 +121,7 @@ model Reaction {
   @@index([userId])
 }
 
-model MessageReadBy {
+model MessageViewedBy {
   id        String   @id @default(uuid())
   message   Message  @relation(fields: [messageId], references: [id])
   messageId String
@@ -134,15 +135,28 @@ model MessageReadBy {
 }
 
 model MesssageReport {
-  id        String   @id @default(uuid())
-  reason    String
-  message   Message  @relation(fields: [messageId], references: [id])
+  id        String        @id @default(uuid())
+  reason    ReportReasons
+  message   Message       @relation(fields: [messageId], references: [id])
   messageId String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User          @relation(fields: [userId], references: [id])
   userId    String
-  createdAt DateTime @default(now())
+  createdAt DateTime      @default(now())
   // @@index([messageId])
   // @@index([userId])
 
   @@unique([messageId, userId])
+}
+
+enum ReportReasons {
+  spam
+  harassment
+  hateSpeech
+  nudityOrSexualContent
+  violenceOrThreats
+  misinformation
+  scamOrFraud
+  selfHarmOrSuicide
+  impersonation
+  other
 }

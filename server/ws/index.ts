@@ -2,6 +2,10 @@ import type { Socket } from "socket.io";
 import prisma from "../prisma/client";
 import { io } from "../index"; // TODO fix circular dependency
 import { deleteUserActive, markUserActive } from "../redis/activity";
+import { ReportReasons } from "../generated/prisma";
+import { errorHandler } from "./middlewares";
+// TODO add security
+// TODO add zod validation
 
 declare module "socket.io" {
    interface Socket {
@@ -45,76 +49,135 @@ export const onConnection = async (socket: Socket) => {
    });
 
    socket.on("message-viewed", async (id) => {
-      const message = await prisma.message.findUnique({
-         where: { id, isViewed: false },
-         select: { userId: true },
-      });
-      if (!message) {
-         console.log("Message not found or already viewed", id); // TODO check for viewed on client
-         return socket.emit("error", "Message not found or already viewed");
-      }
+      // TODO view many
       const data = await prisma.message.update({
-         where: { id, isViewed: false },
+         where: {
+            id,
+            NOT: {
+               userId: socket.userId,
+               viewedBy: {
+                  some: {
+                     userId: socket.userId,
+                  },
+               },
+            },
+         },
          data: {
             isViewed: true,
-            viewedAt: new Date(),
-            viewedBy: { connect: { id: socket.userId } },
+            viewedBy: {
+               connectOrCreate: {
+                  where: {
+                     messageId_userId: {
+                        messageId: id,
+                        userId: socket.userId,
+                     },
+                  },
+                  create: {
+                     userId: socket.userId,
+                  },
+               },
+            },
          },
-         select: { userId: true },
+         include: {
+            viewedBy: {
+               include: { user: true },
+            },
+         },
       });
       const targetSocketId = userSocketMap.get(data.userId)?.id;
-      io.to(targetSocketId!).emit("your-message-viewed", id);
+      io.to(targetSocketId!).emit("your-message-viewed", id, data.viewedBy);
    });
 
    socket.on("message-edit", async ({ id, text, roomId }: { id: string; text: string; roomId: string }) => {
       await prisma.message.update({
-         where: { id },
+         where: { id, userId: socket.userId },
          data: { text, isEdited: true, lastEditedAt: new Date() },
       });
       socket.to(roomId).emit("participant-message-edited", id, text);
    });
+
    socket.on("message-delete", async ({ id, roomId }: { id: string; roomId: string }) => {
       await prisma.message.update({
-         where: { id },
+         where: { id, userId: socket.userId },
          data: { isDeleted: true, deletedAt: new Date() },
       });
       socket.to(roomId).emit("participant-message-deleted", id);
    });
 
-   //* REACTION
-   socket.on("message-reaction", async ({ messageId, content, roomId }: { messageId: string; content: string; roomId: string }) => {
-      const existing = await prisma.reaction.findUnique({
-         where: {
-            messageId_userId: {
-               messageId,
-               userId: socket.userId,
+   socket.on(
+      "message-report",
+      await errorHandler(async ({ id, reason }: { id: string; reason: ReportReasons }, callback: any) => {
+         console.log("message-report");
+         const msg = await prisma.message.update({
+            where: {
+               id,
+               NOT: { userId: socket.userId },
             },
-         },
-      });
+            data: {
+               reports: {
+                  connectOrCreate: {
+                     where: {
+                        messageId_userId: {
+                           messageId: id,
+                           userId: socket.userId,
+                        },
+                     },
+                     create: {
+                        userId: socket.userId,
+                        reason,
+                     },
+                  },
+               },
+            },
+         });
+         console.log(msg);
+         callback({ data: msg });
+      }),
+   );
+   socket.on(
+      "test-error",
+      await errorHandler(() => {
+         throw new Error("panic");
+      }),
+   );
 
-      let reaction;
-      if (existing) {
-         reaction = await prisma.reaction.update({
+   //* REACTION
+   socket.on(
+      "message-reaction",
+      async ({ messageId, content, roomId }: { messageId: string; content: string; roomId: string }) => {
+         const existing = await prisma.reaction.findUnique({
             where: {
                messageId_userId: {
                   messageId,
                   userId: socket.userId,
                },
             },
-            data: { content },
          });
-      } else {
-         reaction = await prisma.reaction.create({
-            data: {
-               userId: socket.userId,
-               content,
-               messageId,
-            },
-         });
-      }
 
-      socket.to(roomId).emit("participant-message-reaction", reaction); // TODO implement on client
-   });
+         let reaction;
+         if (existing) {
+            reaction = await prisma.reaction.update({
+               where: {
+                  messageId_userId: {
+                     messageId,
+                     userId: socket.userId,
+                  },
+               },
+               data: { content },
+            });
+         } else {
+            reaction = await prisma.reaction.create({
+               data: {
+                  userId: socket.userId,
+                  content,
+                  messageId,
+               },
+            });
+         }
+
+         socket.to(roomId).emit("participant-message-reaction", reaction); // TODO implement on client
+      },
+   );
 
    //* OTHER
    socket.on("ping", async () => {

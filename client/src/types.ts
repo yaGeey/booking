@@ -1,3 +1,5 @@
+import { ZodError } from 'zod';
+
 export type UserInput = {
    username: string
    email: string
@@ -15,18 +17,34 @@ export type User = {
    avatarColor: string
 }
 export type Message = {
-   id: string
-   text: string
+   id: string;
+   text: string;
+   createdAt: string;
+   updatedAt: string;
+   roomId: string;
+   userId: string;
+   user: User;
+
+   isDeleted: boolean;
+   deletedAt: boolean;
+   isEdited: boolean;
+   lastEditedAt: boolean;
+
+   isViewed: boolean;
+   viewedBy?: ViewedBy[];
+
+   reactions?: {
+      content: string;
+      updatedAt: string;
+      userId: string;
+      user: User;
+   }[];
+
+   isReported: boolean;
+};
+export type ViewedBy = {
    createdAt: string
-   updatedAt: string
-   roomId: string
-   userId: string
    user: User
-   isViewed: boolean
-   viewedAt?: string
-   viewedBy?: User[]
-   isDeleted: boolean
-   isEdited: boolean
 }
 export type LocalMessage = {
    text: string
@@ -58,3 +76,47 @@ export type Room = {
    ownerId: string
 }
 export type RoomWithUsers = Room & { participants: Array<User> }
+
+export enum ReportReasons {
+   spam,
+   harassment,
+   hateSpeech,
+   nudityOrSexualContent,
+   violenceOrThreats,
+   misinformation,
+   scamOrFraud,
+   selfHarmOrSuicide,
+   impersonation,
+   other,
+}
+
+export type SocketResponse =
+   | { ok: true }
+   | {
+        ok: false;
+        type: 'PRISMA_ERROR';
+        error: {
+           code?: string;
+           meta?: { [key: string]: any };
+           message: string;
+        };
+        message: string;
+     }
+   | {
+        ok: false;
+        type: 'UNEXPECTED_ERROR';
+        error: any;
+        message: string;
+     }
+   | {
+        ok: false;
+        type: 'VALIDATION_ERROR';
+        error: ZodError;
+        data: { [key: string]: string[] };
+         message: string;
+     }
+   | {
+        ok: false;
+        type: 'MESSAGE_ERROR';
+        message: string;
+     };

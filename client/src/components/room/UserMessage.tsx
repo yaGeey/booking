@@ -19,7 +19,7 @@ export function UserMessageLocal({ msg, status }: { msg: LocalMessage, status: '
    )
 }
 
-export function UserMessage({ msg, onDelete, onEdit }: { msg: Message, onDelete: () => void, onEdit: () => void }) {
+export function UserMessage({ msg, onDelete, onEdit, onReport }: { msg: Message, onDelete: () => void, onEdit: () => void, onReport: () => void }) {
    const [contextMenu, setContextMenu] = useState<{ mouseX: number, mouseY: number } | null>(null);
 
    function handleContextMenu(e: React.MouseEvent) {
@@ -30,6 +30,7 @@ export function UserMessage({ msg, onDelete, onEdit }: { msg: Message, onDelete:
             null
       );
    };
+   
    return (
       <>
          <div
@@ -46,9 +47,11 @@ export function UserMessage({ msg, onDelete, onEdit }: { msg: Message, onDelete:
                <CheckMark
                   width={12} height={12}
                   fill={msg.isViewed ? 'blue' : '#000'}
-                  data-tooltip-id={msg.isViewed ? `tooltip-${msg.id}` : ''}
-                  data-tooltip-content={msg.viewedBy?.length && msg.viewedAt ?
-                     `At ${getTime(msg.viewedAt!)} by ${msg.viewedBy[0].name}` : ''}
+                  data-tooltip-id={`tooltip-${msg.id}`}
+                  data-tooltip-content={
+                     msg.viewedBy?.length ? (msg.viewedBy!.map(v => `At ${getTime(v.createdAt)} by ${v.user.name}`)).join(', ') : ''
+                  }
+                  onClick={(e) => { console.log(msg.isViewed, msg.viewedBy); e.stopPropagation() }}
                />
             </span>
 
@@ -64,9 +67,10 @@ export function UserMessage({ msg, onDelete, onEdit }: { msg: Message, onDelete:
             >
                <MenuItem onClick={() => onEdit()}>Edit</MenuItem>
                <MenuItem onClick={() => onDelete()}>Delete</MenuItem>
+               <MenuItem onClick={() => onReport()}>Report</MenuItem>
             </Menu>
          </div>
-         <Tooltip id={`tooltip-${msg.id}`} place="top" style={{ fontSize: '12px', padding: '0 0.25rem', zIndex: 100000 }} />
+         {msg.isViewed && <Tooltip id={`tooltip-${msg.id}`} place="top" style={{ fontSize: '12px', padding: '0 0.25rem', zIndex: 100000 }} />}
       </>
    )
 }
