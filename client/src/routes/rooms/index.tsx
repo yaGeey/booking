@@ -9,8 +9,8 @@ export const Route = createFileRoute('/rooms/')({
          method: 'GET',
          credentials: 'include',
       })
-      return await res.json() as Array<RoomWithUsers>
-   }
+      return (await res.json()) as Array<RoomWithUsers>
+   },
 })
 
 function RouteComponent() {

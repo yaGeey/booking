@@ -1,6 +1,6 @@
-import type { User } from "@/types";
-import { useState } from "react";
-import { Tooltip } from "react-tooltip";
+import type { User } from '@/types'
+import { useState } from 'react'
+import { Tooltip } from 'react-tooltip'
 
 export function AvatarNoImg({ user }: { user: User }) {
    return (

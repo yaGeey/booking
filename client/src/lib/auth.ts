@@ -29,7 +29,7 @@ export async function getCurrentUser(
       if (redirectIfNotAuthenticated && !data.id) {
          window.location.href = '/auth/login'
       }
-      return data;
+      return data
    } catch (error) {
       console.error(error)
       return null

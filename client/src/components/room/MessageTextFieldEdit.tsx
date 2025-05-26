@@ -1,16 +1,21 @@
-import { Button, TextField } from "@mui/material"
-import { socket } from "@/socket"
-import { useState, type Dispatch, type SetStateAction } from "react"
-import type { Message } from "@/types"
+import { Button, TextField } from '@mui/material'
+import { socket, useSocketEmit } from '@/socket'
+import { useState, type Dispatch, type SetStateAction } from 'react'
+import type { Message } from '@/types'
 
-export default function MessageTextFieldEdit({ userId, roomId, handleMessageEdit, setMsgEditing, msg }: {
-   userId: string,
-   roomId: string,
-   handleMessageEdit: (messageId: string, text: string) => void,
-   setMsgEditing: Dispatch<SetStateAction<Message | null>>,
-   msg: Message,
+export default function MessageTextFieldEdit({
+   userId,
+   roomId,
+   handleMessageEdit,
+   setMsgEditing,
+   msg,
+}: {
+   userId: string
+   roomId: string
+   handleMessageEdit: (messageId: string, text: string) => void
+   setMsgEditing: Dispatch<SetStateAction<Message | null>>
+   msg: Message
 }) {
-
    const [value, setValue] = useState<string>(msg.text)
    const [typingTimeoutState, setTypingTimeout] = useState<any | null>(null)
    const [isTyping, setIsTyping] = useState(false)
@@ -30,11 +35,12 @@ export default function MessageTextFieldEdit({ userId, roomId, handleMessageEdit
       setTypingTimeout(typingTimeout)
    }
 
+   const { emit } = useSocketEmit('message-edit')
    function handleSendMessage() {
       if (!value.trim()) return
       handleMessageEdit(msg.id, value)
 
-      socket.emit('message-edit', {
+      emit({
          id: msg.id,
          text: value,
          roomId,

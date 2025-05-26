@@ -4,10 +4,10 @@ export default function passwordResetEmailHtml({
    pin,
    ip,
 }: {
-   region: string;
-   user: { name: string; id: string };
-   pin: string;
-   ip?: string;
+   region: string
+   user: { name: string; id: string }
+   pin: string
+   ip?: string
 }) {
    return `
    <div style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;">
@@ -37,5 +37,5 @@ export default function passwordResetEmailHtml({
          <p style="font-size: 12px; color: #aaa; text-align: center;">If you have questions, contact our support team.</p>
       </div>
    </div>
-`;
+`
 }

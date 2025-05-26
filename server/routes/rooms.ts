@@ -1,16 +1,16 @@
-import { Router } from "express";
-import { verifyAdmin, verifyAuth } from "../middlewares";
-import { ErrorResponse } from "../lib/errors";
-import type { AuthenticatedRequest } from "../middlewares";
-import { RoomSchema } from "../zod.schemas";
-import prisma from "../prisma/client";
+import { Router } from 'express'
+import { verifyAdmin, verifyAuth } from '../middlewares'
+import { ErrorResponse } from '../lib/errors'
+import type { AuthenticatedRequest } from '../middlewares'
+import { RoomSchema } from '../zod.schemas'
+import prisma from '../prisma/client'
 
-const router = Router();
-router.use(verifyAuth);
+const router = Router()
+router.use(verifyAuth)
 
-router.get("/my", async (req: AuthenticatedRequest, res, next) => {
+router.get('/my', async (req: AuthenticatedRequest, res, next) => {
    try {
-      const userId = req.user!.id;
+      const userId = req.user!.id
       const rooms = await prisma.room.findMany({
          where: {
             OR: [{ ownerId: userId }, { participants: { some: { id: userId } } }],
@@ -19,20 +19,20 @@ router.get("/my", async (req: AuthenticatedRequest, res, next) => {
             owner: true,
             participants: true,
          },
-      });
-      res.json(rooms);
+      })
+      res.json(rooms)
    } catch (e) {
-      next(e);
+      next(e)
    }
-});
+})
 
-router.get("/:roomId", async (req: AuthenticatedRequest, res, next) => {
+router.get('/:roomId', async (req: AuthenticatedRequest, res, next) => {
    try {
-      const roomId = req.params.roomId;
-      const userId = req.user!.id;
-      const cursorId = req.query.cursor as string | undefined;
-      const take = Math.min(Number(req.query.take) || 25, 25);
-      console.log("cursorId", cursorId);
+      const roomId = req.params.roomId
+      const userId = req.user!.id
+      const cursorId = req.query.cursor as string | undefined
+      const take = Math.min(Number(req.query.take) || 25, 25)
+      console.log('cursorId', cursorId)
 
       const room = await prisma.room.findUnique({
          where: {
@@ -43,8 +43,8 @@ router.get("/:roomId", async (req: AuthenticatedRequest, res, next) => {
             owner: true,
             participants: true,
          },
-      });
-      if (!room) throw new ErrorResponse("Room not found or you are not a participant", 400);
+      })
+      if (!room) throw new ErrorResponse('Room not found or you are not a participant', 400)
 
       const messages = await prisma.message.findMany({
          where: { roomId, isDeleted: false },
@@ -54,51 +54,51 @@ router.get("/:roomId", async (req: AuthenticatedRequest, res, next) => {
                include: { user: true },
             },
          },
-         orderBy: { createdAt: "desc" },
+         orderBy: { createdAt: 'desc' },
          take,
          skip: cursorId ? 1 : 0,
          ...(cursorId ? { cursor: { id: cursorId } } : {}),
-      });
+      })
 
-      res.json({ room, messages }); // TODO add hasMore
+      res.json({ room, messages }) // TODO add hasMore
    } catch (e) {
-      next(e);
+      next(e)
    }
-});
+})
 
-router.post("/", async (req: AuthenticatedRequest, res, next) => {
+router.post('/', async (req: AuthenticatedRequest, res, next) => {
    try {
-      const input = RoomSchema.parse(req.body);
+      const input = RoomSchema.parse(req.body)
       const room = await prisma.room.create({
          data: {
             ...input,
             ownerId: req.user!.id,
          },
-      });
+      })
 
-      res.status(201).json(room);
+      res.status(201).json(room)
    } catch (error) {
-      next(error);
+      next(error)
    }
-});
+})
 
-router.get("/", verifyAdmin, async (req: AuthenticatedRequest, res, next) => {
+router.get('/', verifyAdmin, async (req: AuthenticatedRequest, res, next) => {
    try {
       const rooms = await prisma.room.findMany({
          include: { owner: true },
-      });
-      res.json(rooms);
+      })
+      res.json(rooms)
    } catch (e) {
-      next(e);
+      next(e)
    }
-});
+})
 
-router.patch("/:roomId/participants", async (req: AuthenticatedRequest, res, next) => {
+router.patch('/:roomId/participants', async (req: AuthenticatedRequest, res, next) => {
    try {
-      const { roomId } = req.params;
-      const { userId, action } = req.body; // action can be 'add' or 'remove'
+      const { roomId } = req.params
+      const { userId, action } = req.body // action can be 'add' or 'remove'
 
-      if (action === "add") {
+      if (action === 'add') {
          await prisma.room.update({
             where: { id: roomId },
             data: {
@@ -106,8 +106,8 @@ router.patch("/:roomId/participants", async (req: AuthenticatedRequest, res, nex
                   connect: { id: userId },
                },
             },
-         });
-      } else if (action === "remove") {
+         })
+      } else if (action === 'remove') {
          await prisma.room.update({
             where: { id: roomId },
             data: {
@@ -115,15 +115,15 @@ router.patch("/:roomId/participants", async (req: AuthenticatedRequest, res, nex
                   disconnect: { id: userId },
                },
             },
-         });
+         })
       } else {
-         throw new ErrorResponse("Invalid action", 400);
+         throw new ErrorResponse('Invalid action', 400)
       }
 
-      res.status(200).json("Participant updated successfully");
+      res.status(200).json('Participant updated successfully')
    } catch (error) {
-      next(error);
+      next(error)
    }
-});
+})
 
-export default router;
+export default router

@@ -1,7 +1,7 @@
-import redis from "./config";
-import { Redis } from "@upstash/redis";
+import redis from './config'
+import { Redis } from '@upstash/redis'
 
-const INACTIVE_TIME = 60 * 3;
+const INACTIVE_TIME = 60 * 3
 
 // const subscriber = new Redis({
 //    url: process.env.UPSTASH_REDIS_REST_URL,
@@ -10,15 +10,15 @@ const INACTIVE_TIME = 60 * 3;
 // subscriber.psubscribe("__keyevent@0__:expired");
 
 export async function markUserActive(id: string) {
-   await redis.sadd('active_users', id);
-   await redis.set(`user:active:${id}`, '1', {ex: INACTIVE_TIME});
+   await redis.sadd('active_users', id)
+   await redis.set(`user:active:${id}`, '1', { ex: INACTIVE_TIME })
 }
 
 export async function getIsUserActive(id: string) {
-   const res = await redis.get(`user:active:${id}`);
-   return res === '1';
+   const res = await redis.get(`user:active:${id}`)
+   return res === '1'
 }
 
 export async function deleteUserActive(id: string) {
-   await redis.del(`user:active:${id}`);
+   await redis.del(`user:active:${id}`)
 }

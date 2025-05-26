@@ -1,15 +1,21 @@
-import { Button, TextField } from "@mui/material"
-import { socket } from "@/socket"
-import { useState } from "react"
+import { Button, TextField } from '@mui/material'
+import { socket, useSocketEmit } from '@/socket'
+import { useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
+import type { Message, MessageMerged } from '@/types'
+import type { DraftFunction } from 'use-immer'
 
-export default function MessageTextField({ userId, roomId, setMessages, setScrollTrigger }: {
-   userId: string,
-   roomId: string,
-   setMessages: React.Dispatch<React.SetStateAction<any[]>>,
-   setScrollTrigger: React.Dispatch<React.SetStateAction<boolean>>,
- }) {
-
+export default function MessageTextField({
+   userId,
+   roomId,
+   setMessages,
+   setScrollTrigger,
+}: {
+   userId: string
+   roomId: string
+   setMessages: (arg: MessageMerged[] | DraftFunction<MessageMerged[]>) => void
+   setScrollTrigger: React.Dispatch<React.SetStateAction<boolean>>
+}) {
    const [value, setValue] = useState<string>('')
    const [typingTimeoutState, setTypingTimeout] = useState<any | null>(null)
    const [isTyping, setIsTyping] = useState(false)
@@ -29,24 +35,25 @@ export default function MessageTextField({ userId, roomId, setMessages, setScrol
       setTypingTimeout(typingTimeout)
    }
 
+   const { emit, isPending, error, clearError } = useSocketEmit('send-message')
    function handleSendMessage() {
       if (!value.trim()) return
       const clientId = uuidv4()
-      setMessages((p) => [
-         ...p,
-         {
+      setMessages((d) => {
+         d.push({
             data: { text: value, clientId, createdAt: new Date().toString() },
             isLocal: true,
             status: 'pending',
-         },
-      ])
-      
-      socket.emit('send-message', {
-         text: value,
-         roomId,
-         clientMessageId: clientId,
+         })
       })
-      
+
+      emit({ text: value, roomId, clientMessageId: clientId }, (data: { message: Message }) => {
+         setMessages((d) => {
+            const i = d.findIndex((msg) => msg.isLocal && msg.data.clientId == clientId)
+            d[i] = { data: data.message, isLocal: false }
+         })
+      })
+
       setValue('')
       setScrollTrigger((p) => !p)
    }

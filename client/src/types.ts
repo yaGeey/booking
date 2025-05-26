@@ -1,4 +1,4 @@
-import { ZodError } from 'zod';
+import { ZodError } from 'zod'
 
 export type UserInput = {
    username: string
@@ -17,31 +17,31 @@ export type User = {
    avatarColor: string
 }
 export type Message = {
-   id: string;
-   text: string;
-   createdAt: string;
-   updatedAt: string;
-   roomId: string;
-   userId: string;
-   user: User;
+   id: string
+   text: string
+   createdAt: string
+   updatedAt: string
+   roomId: string
+   userId: string
+   user: User
 
-   isDeleted: boolean;
-   deletedAt: boolean;
-   isEdited: boolean;
-   lastEditedAt: boolean;
+   isDeleted: boolean
+   deletedAt: boolean
+   isEdited: boolean
+   lastEditedAt: boolean
 
-   isViewed: boolean;
-   viewedBy?: ViewedBy[];
+   isViewed: boolean
+   viewedBy?: ViewedBy[]
 
    reactions?: {
-      content: string;
-      updatedAt: string;
-      userId: string;
-      user: User;
-   }[];
+      content: string
+      updatedAt: string
+      userId: string
+      user: User
+   }[]
 
-   isReported: boolean;
-};
+   isReported: boolean
+}
 export type ViewedBy = {
    createdAt: string
    user: User
@@ -58,9 +58,7 @@ export type SocketError = {
    data?: { [key: string]: string }
 }
 
-export type MessageMerged =
-   | { data: LocalMessage; isLocal: true; status: 'pending' | 'error' }
-   | { data: Message; isLocal: false }
+export type MessageMerged = { data: LocalMessage; isLocal: true; status: 'pending' | 'error' } | { data: Message; isLocal: false }
 
 export type Room = {
    id: string
@@ -90,33 +88,39 @@ export enum ReportReasons {
    other,
 }
 
+export type SocketResponseSuccess = {
+   ok: true
+   type: 'SUCCESS'
+   data?: any
+   message?: string
+}
 export type SocketResponse =
-   | { ok: true }
+   | SocketResponseSuccess
    | {
-        ok: false;
-        type: 'PRISMA_ERROR';
+        ok: false
+        type: 'PRISMA_ERROR'
         error: {
-           code?: string;
-           meta?: { [key: string]: any };
-           message: string;
-        };
-        message: string;
+           code?: string
+           meta?: { [key: string]: any }
+           message: string
+        }
+        message: string
      }
    | {
-        ok: false;
-        type: 'UNEXPECTED_ERROR';
-        error: any;
-        message: string;
+        ok: false
+        type: 'UNEXPECTED_ERROR'
+        error: any
+        message: string
      }
    | {
-        ok: false;
-        type: 'VALIDATION_ERROR';
-        error: ZodError;
-        data: { [key: string]: string[] };
-         message: string;
+        ok: false
+        type: 'VALIDATION_ERROR'
+        error: ZodError
+        data: { [key: string]: string[] }
+        message: string
      }
    | {
-        ok: false;
-        type: 'MESSAGE_ERROR';
-        message: string;
-     };
+        ok: false
+        type: 'MESSAGE_ERROR'
+        message: string
+     }

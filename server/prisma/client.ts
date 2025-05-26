@@ -1,4 +1,4 @@
-import { PrismaClient } from "../generated/prisma";
+import { PrismaClient } from '../generated/prisma'
 const prisma = new PrismaClient({
    omit: {
       user: {
@@ -8,5 +8,5 @@ const prisma = new PrismaClient({
          providerId: true,
       },
    },
-});
-export default prisma;
+})
+export default prisma

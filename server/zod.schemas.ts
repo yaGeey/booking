@@ -4,7 +4,7 @@ export const MessageSchema = z.object({
    text: z.string(),
    userId: z.string(),
    roomId: z.string(),
-});
+})
 
 export const RoomSchema = z.object({
    title: z.string().optional(),
@@ -16,4 +16,4 @@ export const RoomSchema = z.object({
    durationMin: z.number().min(1).optional(),
    // messages: z.array(z.string()).optional(),
    // ownerId: z.string(),
-});
+})
