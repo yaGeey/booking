@@ -1,6 +1,6 @@
-import { updateUserSession, getUserSession } from './redis/sessions'
-import { Request, Response, NextFunction } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import type { User } from './generated/prisma'
+import { getUserSession, updateUserSession } from './redis/sessions'
 
 export interface AuthenticatedRequest extends Request {
    user?: Pick<User, 'id' | 'role'>

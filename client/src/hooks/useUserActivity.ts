@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
 import { socket } from '@/socket'
+import { useEffect, useRef } from 'react'
 
 export default function useUserActivity() {
    const lastActivityRef = useRef(Date.now())

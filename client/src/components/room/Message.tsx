@@ -1,9 +1,9 @@
-import type { Message } from '@/types'
-import { AvatarImg } from './Avatar'
 import { getTime } from '@/lib/dates'
-import { twMerge as tw } from 'tailwind-merge'
+import type { Message } from '@/types'
 import { Menu, MenuItem } from '@mui/material'
 import { useState } from 'react'
+import { twMerge as tw } from 'tailwind-merge'
+import { AvatarImg } from './Avatar'
 
 export default function Message({ message, onReport }: { message: Message; onReport: () => void }) {
    const [contextMenu, setContextMenu] = useState<{ mouseX: number; mouseY: number } | null>(null)

@@ -1,10 +1,10 @@
-import { CircularProgress, Menu, MenuItem } from '@mui/material'
-import CheckMark from './check-mark.svg?react'
-import type { LocalMessage, Message } from '@/types'
-import { Tooltip } from 'react-tooltip'
 import { getTime } from '@/lib/dates'
+import type { LocalMessage, Message } from '@/types'
+import { CircularProgress, Menu, MenuItem } from '@mui/material'
 import { useState } from 'react'
+import { Tooltip } from 'react-tooltip'
 import { twMerge as tw } from 'tailwind-merge'
+import CheckMark from './check-mark.svg?react'
 
 export function UserMessageLocal({ msg, status }: { msg: LocalMessage; status: 'pending' | 'error' }) {
    return (

@@ -1,5 +1,5 @@
-import redis from '../redis/config'
 import prisma from '../prisma/client'
+import redis from '../redis/config'
 /*
 TODO по хорошому воркер на BullMQ, але він працює тільки якщо локально розгортаєш redis сервер, 
 а в мене редіс на upstash. Також, якби запускати це не в index.ts а на окремому файлі то можна

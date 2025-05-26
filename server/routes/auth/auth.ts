@@ -1,10 +1,10 @@
 import { Router } from 'express'
+import { Resend } from 'resend'
+import { z } from 'zod'
 import { PrismaClient } from '../../generated/prisma'
 import { comparePassword, generateSalt, hashPassword } from '../../lib/auth'
-import { createUserSession, deleteUserSession, getUserSession } from '../../redis/sessions'
-import { z } from 'zod'
 import { ErrorResponse } from '../../lib/errors'
-import { Resend } from 'resend'
+import { createUserSession, deleteUserSession, getUserSession } from '../../redis/sessions'
 import getRandomColor from '../../utils/getRandomColor'
 const router = Router()
 const resend = new Resend(process.env.RESEND_API_KEY) // TODO: add email ver on register

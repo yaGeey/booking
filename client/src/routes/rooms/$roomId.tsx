@@ -1,27 +1,15 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { Button, TextField } from '@mui/material'
-import { useEffect, useRef, useState } from 'react'
-import { v4 as uuidv4 } from 'uuid'
-import type {
-   LocalMessage,
-   MessageMerged,
-   Message as MessageType,
-   Room,
-   RoomWithUsers,
-   SocketError,
-   SocketResponse,
-   User,
-   ViewedBy,
-} from '@/types'
 import Message from '@/components/room/Message'
+import handleMessagePaginataion from '@/components/room/MessagePagination'
+import MessageTextField from '@/components/room/MessageTextField'
+import MessageTextFieldEdit from '@/components/room/MessageTextFieldEdit'
 import { UserMessage, UserMessageLocal } from '@/components/room/UserMessage'
 import { getCurrentUserFull } from '@/lib/auth'
 import { socket, socketConnectDev, useSocketEmit, useSockets } from '@/socket'
-import handleMessagePaginataion from '@/components/room/MessagePagination'
-import MessageTextField from '@/components/room/MessageTextField'
+import type { MessageMerged, Message as MessageType, RoomWithUsers, ViewedBy } from '@/types'
+import { Button } from '@mui/material'
+import { createFileRoute } from '@tanstack/react-router'
+import { useEffect, useRef, useState } from 'react'
 import { useImmer } from 'use-immer'
-import { handleTyping } from '@/components/room/MessageUtils'
-import MessageTextFieldEdit from '@/components/room/MessageTextFieldEdit'
 
 export const Route = createFileRoute('/rooms/$roomId')({
    component: RouteComponent,

@@ -1,12 +1,12 @@
 import { Router } from 'express'
+import rateLimit from 'express-rate-limit'
+import { Resend } from 'resend'
+import { z } from 'zod'
 import { PrismaClient } from '../../generated/prisma'
 import { generateSalt, hashPassword } from '../../lib/auth'
-import { createUserSession } from '../../redis/sessions'
-import { z } from 'zod'
-import { ErrorResponse } from '../../lib/errors'
-import { Resend } from 'resend'
-import rateLimit from 'express-rate-limit'
 import passwordResetEmailHtml from '../../lib/email/resendHTML'
+import { ErrorResponse } from '../../lib/errors'
+import { createUserSession } from '../../redis/sessions'
 const router = Router()
 const prisma = new PrismaClient()
 const resend = new Resend(process.env.RESEND_API_KEY)

@@ -1,6 +1,6 @@
+import { hash, randomBytes } from 'node:crypto'
 import { z } from 'zod'
-import type { oAuthProviders, User } from '../../generated/prisma'
-import { randomBytes, hash } from 'node:crypto'
+import type { oAuthProviders } from '../../generated/prisma'
 type Cookie = (name: string, value: string, options?: Record<string, unknown>) => void
 
 export default class OAuthClient<T> {

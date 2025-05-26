@@ -1,6 +1,6 @@
 import { Button, TextField } from '@mui/material'
-import { Link, Navigate, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useMutation } from '@tanstack/react-query'
+import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
 
 type UserInput = {
    username: string

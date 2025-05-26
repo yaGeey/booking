@@ -1,9 +1,9 @@
 import { Router } from 'express'
-import getOAuthProviders from '../../lib/oauth/providers'
 import type { oAuthProviders } from '../../generated/prisma'
 import { PrismaClient } from '../../generated/prisma/index.js'
-import { createUserSession } from '../../redis/sessions'
 import { ErrorResponse } from '../../lib/errors'
+import getOAuthProviders from '../../lib/oauth/providers'
+import { createUserSession } from '../../redis/sessions'
 import getRandomColor from '../../utils/getRandomColor'
 const prisma = new PrismaClient()
 const router = Router()

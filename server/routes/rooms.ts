@@ -1,9 +1,9 @@
 import { Router } from 'express'
-import { verifyAdmin, verifyAuth } from '../middlewares'
 import { ErrorResponse } from '../lib/errors'
 import type { AuthenticatedRequest } from '../middlewares'
-import { RoomSchema } from '../zod.schemas'
+import { verifyAdmin, verifyAuth } from '../middlewares'
 import prisma from '../prisma/client'
+import { RoomSchema } from '../zod.schemas'
 
 const router = Router()
 router.use(verifyAuth)

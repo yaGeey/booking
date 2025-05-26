@@ -1,9 +1,9 @@
-import { Button, TextField } from '@mui/material'
 import { socket, useSocketEmit } from '@/socket'
-import { useState } from 'react'
-import { v4 as uuidv4 } from 'uuid'
 import type { Message, MessageMerged } from '@/types'
+import { Button, TextField } from '@mui/material'
+import { useState } from 'react'
 import type { DraftFunction } from 'use-immer'
+import { v4 as uuidv4 } from 'uuid'
 
 export default function MessageTextField({
    userId,

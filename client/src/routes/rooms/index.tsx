@@ -1,5 +1,5 @@
 import Card from '@/components/room/Card'
-import type { Room, RoomWithUsers } from '@/types'
+import type { RoomWithUsers } from '@/types'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/rooms/')({

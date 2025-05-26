@@ -1,5 +1,5 @@
-import { io } from 'socket.io-client'
 import { useCallback, useEffect, useState } from 'react'
+import { io } from 'socket.io-client'
 import { getCurrentUser } from './lib/auth'
 import type { SocketResponse } from './types'
 

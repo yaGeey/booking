@@ -1,8 +1,8 @@
-import { Button } from '@mui/material'
-import { Link, createFileRoute, useLoaderData } from '@tanstack/react-router'
-import { getCurrentUser, getCurrentUserFull, logout } from '@/lib/auth'
 import Card from '@/components/room/Card'
-import type { Room, RoomWithUsers } from '@/types'
+import { getCurrentUserFull, logout } from '@/lib/auth'
+import type { RoomWithUsers } from '@/types'
+import { Button } from '@mui/material'
+import { Link, createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/')({
    component: App,

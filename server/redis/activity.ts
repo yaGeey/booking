@@ -1,5 +1,4 @@
 import redis from './config'
-import { Redis } from '@upstash/redis'
 
 const INACTIVE_TIME = 60 * 3
 

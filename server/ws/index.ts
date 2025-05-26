@@ -1,10 +1,10 @@
 import type { Socket } from 'socket.io'
-import prisma from '../prisma/client'
-import { io } from '../index' // TODO fix circular dependency
-import { deleteUserActive, markUserActive } from '../redis/activity'
-import { ReportReasons } from '../generated/prisma'
-import { errorHandler } from './middlewares'
 import { z } from 'zod'
+import { ReportReasons } from '../generated/prisma'
+import { io } from '../index' // TODO fix circular dependency
+import prisma from '../prisma/client'
+import { deleteUserActive, markUserActive } from '../redis/activity'
+import { errorHandler } from './middlewares'
 // TODO add security
 
 declare module 'socket.io' {

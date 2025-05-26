@@ -1,10 +1,8 @@
 import { Router } from 'express'
-import multer from 'multer'
-import { getStorage, ref, getDownloadURL, uploadBytesResumable } from 'firebase/storage'
 import { initializeApp } from 'firebase/app'
+import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/storage'
+import multer from 'multer'
 import firebaseConfig from '../configs/firebase'
-import { PrismaClient } from '../generated/prisma/index.js'
-import { verifyAuth } from '../middlewares'
 import { ErrorResponse } from '../lib/errors'
 import prisma from '../prisma/client'
 

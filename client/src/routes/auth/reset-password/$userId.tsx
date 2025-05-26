@@ -1,7 +1,7 @@
+import type { UserInput } from '@/types'
 import { Button, TextField } from '@mui/material'
 import { useMutation } from '@tanstack/react-query'
-import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
-import type { UserInput } from '@/types'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/auth/reset-password/$userId')({
    component: RouteComponent,

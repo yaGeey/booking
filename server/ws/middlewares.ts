@@ -1,8 +1,7 @@
-import type { Socket, ExtendedError } from 'socket.io'
-import { getUserSession } from '../redis/sessions'
-import { io } from '../index' // TODO fix circular dependency
-import { markUserActive } from '../redis/activity'
+import type { ExtendedError, Socket } from 'socket.io'
 import { ZodError } from 'zod'
+import { markUserActive } from '../redis/activity'
+import { getUserSession } from '../redis/sessions'
 
 export const authMiddleware = async (socket: Socket, next: (err?: ExtendedError) => void) => {
    try {

@@ -1,6 +1,6 @@
-import type { Room, RoomWithUsers } from '@/types'
-import ClosedSVG from './closed.svg?react'
+import type { RoomWithUsers } from '@/types'
 import { Link } from '@tanstack/react-router'
+import ClosedSVG from './closed.svg?react'
 
 export default function Card({ data }: { data: RoomWithUsers }) {
    return (

@@ -1,4 +1,4 @@
-import { scrypt, randomBytes, timingSafeEqual } from 'node:crypto'
+import { randomBytes, scrypt, timingSafeEqual } from 'node:crypto'
 import type { User } from '../generated/prisma'
 export type UserSession = Pick<User, 'id' | 'role'>
 
