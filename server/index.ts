@@ -41,17 +41,17 @@ app.use(express.json())
 // app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
 app.use(helmet())
 
-app.use(
-   morgan('dev', {
-      skip: (req, res) => res.statusCode < 400,
-      stream: fs.createWriteStream(path.join(__dirname, 'logs/error.log'), { flags: 'a' }),
-   }),
-)
-app.use(
-   morgan('common', {
-      stream: fs.createWriteStream(path.join(__dirname, 'logs/access.log'), { flags: 'a' }),
-   }),
-)
+// app.use(
+//    morgan('dev', {
+//       skip: (req, res) => res.statusCode < 400,
+//       stream: fs.createWriteStream(path.join(__dirname, 'logs/error.log'), { flags: 'a' }),
+//    }),
+// )
+// app.use(
+//    morgan('common', {
+//       stream: fs.createWriteStream(path.join(__dirname, 'logs/access.log'), { flags: 'a' }),
+//    }),
+// )
 
 // routes
 app.use('/api/users', userRoutes)
@@ -65,10 +65,6 @@ app.use(errorMiddleware)
 io.use(authMiddleware)
 io.use(userActivityMiddleware)
 io.on('connection', onConnection)
-
-app.get('/', (req, res) => {
-   res.send('Hello World!')
-})
 
 httpServer.listen(8080, () => {
    console.log('Server is running')
