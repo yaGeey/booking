@@ -58,7 +58,13 @@ export type SocketError = {
    data?: { [key: string]: string }
 }
 
-export type MessageMerged = { data: LocalMessage; isLocal: true; status: 'pending' | 'error' } | { data: Message; isLocal: false }
+export type MessageMerged =
+   | {
+        data: LocalMessage
+        isLocal: true
+        status: 'pending' | 'error'
+     }
+   | { data: Message; isLocal: false }
 
 export type Room = {
    id: string

@@ -1,7 +1,8 @@
 // TODO npx prisma migrate dev --name aboba
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  provider      = "prisma-client-js"
+  output        = "../generated/prisma"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -27,11 +28,11 @@ model User {
   ownedRooms       Room[]             @relation("Owned")
   rooms            Room[]
   messages         Message[]
-  PasswordResetPin PasswordResetPin[]
-  // viewedMessages   Message[]          @relation("MessageViewed") // TODO delete after week with cronjob
+  passwordResetPin PasswordResetPin[]
   reactions        Reaction[]
-  viewedMessages   MessageViewedBy[]
-  MesssageReport   MesssageReport[]
+  viewedMessages   MessageViewedBy[] // TODO delete after week with cronjob
+  messsageReports  MesssageReport[]
+  messageForwards  MessageForward[]
 }
 
 enum Role {
@@ -61,38 +62,63 @@ model Room {
   owner        User      @relation("Owned", fields: [ownerId], references: [id])
   ownerId      String
   participants User[]
+
+  forwardedFrom MessageForward[] @relation("RoomForwardedFrom")
+  forwardedTo   MessageForward[] @relation("RoomForwardedTo")
 }
 
 // isRecurring: z.boolean().optional(), // add
 
-// TODO edit, delete, pin, report, reply!.. react, forward, copy, share
+// TODO edit, delete, pin, report, reply!.. react, forward
 model Message {
-  id           String    @id @default(uuid())
-  text         String
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  
+  id        String   @id @default(uuid())
+  text      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   isEdited     Boolean   @default(false)
   lastEditedAt DateTime?
   isDeleted    Boolean   @default(false)
   deletedAt    DateTime?
-  // isPinned  Boolean @default(false)
+  isPinned     Boolean   @default(false)
 
   room   Room   @relation(fields: [roomId], references: [id])
   roomId String
   user   User   @relation(fields: [userId], references: [id])
   userId String
 
-  isViewed  Boolean           @default(false)
-  reactions Reaction[]
-  viewedBy  MessageViewedBy[]
+  isViewed Boolean           @default(false)
+  viewedBy MessageViewedBy[]
 
+  reactions  Reaction[]
   isReported Boolean          @default(false)
   reports    MesssageReport[]
+
+  replyTo   Message?         @relation("MessageReply", fields: [replyToId], references: [id])
+  replyToId String?
+  replies   Message[]        @relation("MessageReply")
+  forwarded MessageForward[]
 
   @@index([isViewed])
   @@index([isDeleted])
   @@index([roomId])
+}
+
+model MessageForward {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  isDirect  Boolean  @default(false) // if true, then message is forwarded to another user, not room
+
+  message    Message @relation(fields: [messageId], references: [id])
+  messageId  String
+  user       User    @relation(fields: [userId], references: [id])
+  userId     String
+  from       Room    @relation("RoomForwardedFrom", fields: [fromRoomId], references: [id])
+  fromRoomId String
+  to         Room    @relation("RoomForwardedTo", fields: [toRoomId], references: [id])
+  toRoomId   String
+
+  @@index([messageId])
 }
 
 model PasswordResetPin {
@@ -128,7 +154,6 @@ model MessageViewedBy {
   user      User     @relation(fields: [userId], references: [id])
   userId    String
   createdAt DateTime @default(now())
-  // @@index([userId])
 
   @@unique([messageId, userId])
   @@index([messageId])
