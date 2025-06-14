@@ -6,8 +6,7 @@
       "start": "nodemon index.ts",
       "simple-build": "tsc",
       "db:deploy": "npx prisma migrate deploy && npx prisma generate",
-      "build": "ts-node index.ts",
-      "copy-prisma": "powershell -Command \"Copy-Item -Recurse -Force ./generated/prisma ./dist/generated/prisma\""
+      "build": "ts-node index.ts"
    },
    "keywords": [],
    "author": "",

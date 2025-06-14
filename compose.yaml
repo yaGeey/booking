@@ -1,7 +1,7 @@
 services:
   server:
     build: 
-      context: .  
+      context: ./server  
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
@@ -11,7 +11,7 @@ services:
       postgres_db:
         condition: service_healthy
     env_file:
-      - .env
+      - ./server/.env
     networks:
       - prisma-network
 
@@ -26,7 +26,6 @@ services:
       POSTGRES_DB: booking
     ports:
       - "5432:5432"
-      - "5555:5555"
     networks:
       - prisma-network
     # healthcheck:
@@ -35,6 +34,23 @@ services:
     #   timeout: 2s
     #   retries: 20
 
+  client:
+    build: 
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    stdin_open: true
+    tty: true  # Keeps the container running for debugging
+    depends_on:
+      server:
+        condition: service_healthy
+    env_file:
+      - ./client/.env
+    networks:
+      - prisma-network
+
 networks:
   prisma-network:
     name: prisma-network
+    driver: bridge
