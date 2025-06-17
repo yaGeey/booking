@@ -6,7 +6,7 @@
       "start": "nodemon index.ts",
       "simple-build": "tsc",
       "db:deploy": "npx prisma migrate deploy && npx prisma generate",
-      "build": "ts-node index.ts"
+      "dev": "ts-node index.ts"
    },
    "keywords": [],
    "author": "",
@@ -35,7 +35,7 @@
       "zod": "^3.24.3"
    },
    "devDependencies": {
-      "@types/cookie-parser": "^1.4.8",
+      "@types/cookie-parser": "^1.4.9",
       "@types/node": "^22.15.2",
       "@types/react": "^19.1.8",
       "nodemon": "^3.1.10",
