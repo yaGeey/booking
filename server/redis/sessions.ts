@@ -15,11 +15,10 @@ export async function createUserSession({ id, role, cookie }: UserSessionCookie)
    })
    cookie('sessionId', sessionId, {
       httpOnly: true,
-      secure: true,
+      // secure: true, // TODO temporary while no Nginx: enable this in production
       sameSite: 'lax',
       maxAge: SESSION_EXPIRATION_TIME * 1000,
    })
-   console.log('redis cookie', cookie)
    return sessionId
 }
 
@@ -33,7 +32,7 @@ export async function deleteUserSession(sessionId: string, clearCookie: any) {
    await redis.del(`session:${sessionId}`)
    clearCookie('sessionId', {
       httpOnly: true,
-      secure: true,
+      // secure: true,
       sameSite: 'lax',
    })
 }
@@ -44,7 +43,7 @@ export async function updateUserSession({ sessionId, user, cookie }: { sessionId
    })
    cookie('sessionId', sessionId, {
       httpOnly: true,
-      secure: true,
+      // secure: true,
       sameSite: 'lax',
       maxAge: SESSION_EXPIRATION_TIME * 1000,
    })
