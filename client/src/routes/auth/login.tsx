@@ -12,6 +12,7 @@ function RouteComponent() {
 
    const mutation = useMutation({
       mutationFn: async (userInput: Omit<UserInput, 'username'>) => {
+         console.log(import.meta.env.VITE_SERVER_URI)
          const res = await fetch(`${import.meta.env.VITE_SERVER_URI}/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -33,7 +34,7 @@ function RouteComponent() {
    }
 
    async function handleDiscordLogin() {
-      window.location.href = 'http://localhost:8080/api/oauth/discord'
+      window.location.href = `${import.meta.env.VITE_SERVER_URI}/api/oauth/discord`
    }
    async function handlePasswordReset() {
       // TODO: as mutation
