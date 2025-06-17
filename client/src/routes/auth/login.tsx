@@ -34,7 +34,7 @@ function RouteComponent() {
    }
 
    async function handleDiscordLogin() {
-      window.location.href = `${import.meta.env.VITE_SERVER_URI}/api/oauth/discord`
+      window.location.href = `${import.meta.env.VITE_SERVER_URI}/oauth/discord`
    }
    async function handlePasswordReset() {
       // TODO: as mutation

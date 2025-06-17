@@ -19,6 +19,7 @@ export async function createUserSession({ id, role, cookie }: UserSessionCookie)
       sameSite: 'lax',
       maxAge: SESSION_EXPIRATION_TIME * 1000,
    })
+   console.log('redis cookie', cookie)
    return sessionId
 }
 

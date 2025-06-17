@@ -20,6 +20,7 @@ const FormSchema = z.object({
 router.get('/me', async (req, res, next) => {
    try {
       const sessionId = req.cookies.sessionId as string | undefined
+      console.log(req.cookies)
       if (!sessionId) throw new ErrorResponse('Unauthorized', 401)
 
       const session = await getUserSession(sessionId)
@@ -87,6 +88,7 @@ router.post('/login', async (req, res, next) => {
       if (!isValidPassword) throw new ErrorResponse('Invalid password', 401, { password: 'Invalid password' })
 
       await createUserSession({ id: user.id, role: user.role, cookie: res.cookie.bind(res) })
+      console.log('User logged in:', res.cookie)
       res.json({ message: 'Login successful' })
    } catch (error) {
       next(error)
