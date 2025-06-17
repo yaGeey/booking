@@ -9,7 +9,7 @@ export const Route = createFileRoute('/')({
    loader: async () => {
       const me = await getCurrentUserFull()
       if (!me) return { me: null, rooms: [] }
-      const res = await fetch('http://localhost:8080/api/rooms/my', {
+      const res = await fetch(`${import.meta.env.VITE_SERVER_URI}/rooms/my`, {
          method: 'GET',
          credentials: 'include',
       })
