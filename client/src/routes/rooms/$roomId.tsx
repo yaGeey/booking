@@ -15,7 +15,7 @@ export const Route = createFileRoute('/rooms/$roomId')({
    component: RouteComponent,
    loader: async ({ params }) => {
       const me = await getCurrentUserFull()
-      const resMsgs = await fetch(`http://localhost:8080/api/rooms/${params.roomId}`, {
+      const resMsgs = await fetch(`${import.meta.env.VITE_SERVER_URI}/rooms/${params.roomId}`, {
          method: 'GET',
          credentials: 'include',
       })
