@@ -1,9 +1,11 @@
-import { Redis } from '@upstash/redis'
-import 'dotenv/config'
+import { createClient } from 'redis';
 // TODO handle when active session exists
 
-const redis = new Redis({
-   url: process.env.UPSTASH_REDIS_REST_URL,
-   token: process.env.UPSTASH_REDIS_REST_TOKEN,
-})
-export default redis
+const client = createClient();
+client.on('error', (err) => console.log('Redis Client Error', err));
+
+(async () => {
+	await client.connect();
+})();
+
+export default client

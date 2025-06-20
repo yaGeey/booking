@@ -8,6 +8,7 @@ import { routeTree } from './routeTree.gen'
 
 import reportWebVitals from './reportWebVitals.ts'
 import './styles.css'
+import { ToastContainer } from 'react-toastify'
 
 const queryClient = new QueryClient()
 
@@ -36,6 +37,7 @@ if (rootElement && !rootElement.innerHTML) {
       <StrictMode>
          <QueryClientProvider client={queryClient}>
             <RouterProvider router={router} />
+            <ToastContainer />
          </QueryClientProvider>
       </StrictMode>,
    )

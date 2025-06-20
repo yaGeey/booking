@@ -7,15 +7,8 @@ import { ErrorResponse } from '../../lib/errors'
 import { createUserSession, deleteUserSession, getUserSession } from '../../redis/sessions'
 import getRandomColor from '../../utils/getRandomColor'
 const router = Router()
-const resend = new Resend(process.env.RESEND_API_KEY) // TODO: add email ver on register
+// const resend = new Resend(process.env.RESEND_API_KEY)
 const prisma = new PrismaClient()
-
-const FormSchema = z.object({
-   // TODO: add info about it to user and to fields also
-   name: z.string(),
-   email: z.string().email({ message: 'Invalid email address' }),
-   password: z.string(),
-})
 
 router.get('/me', async (req, res, next) => {
    try {
@@ -45,9 +38,9 @@ router.get('/me', async (req, res, next) => {
 // TODO: add email verification and so vinesi in function Resend related stuff and on client make a reusable verification component
 router.post('/register', async (req, res, next) => {
    try {
-      const validation = FormSchema.safeParse(req.body)
-      if (!validation.success) throw new ErrorResponse('Invalid input', 400, validation.error.flatten().fieldErrors)
-      const { name, email, password } = validation.data
+      const { name, email, password } = z
+         .object({ name: z.string(), email: z.string().email(), password: z.string() })
+         .parse(req.body)
 
       const existingUser = await prisma.user.findUnique({
          where: { email },

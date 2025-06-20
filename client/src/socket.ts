@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { io } from 'socket.io-client'
 import { getCurrentUser } from './lib/auth'
 import type { SocketResponse } from './types'
+import { toast } from 'react-toastify';
 
 // "undefined" means the URL will be computed from the `window.location` object
 // const URL = import.meta.env.NODE_ENV === 'production' ? undefined : 'http://localhost:8080'
@@ -38,7 +39,6 @@ export function useSockets(handlers: Record<string, (...args: any[]) => void>) {
    }
 }
 
-// TODO implement, not tested
 export function useSocketEmit(name: string, errMsg?: string) {
    const [isPending, setIsPending] = useState(false)
    const [error, setError] = useState<null | Extract<SocketResponse, { ok: false }>>(null)
@@ -54,7 +54,7 @@ export function useSocketEmit(name: string, errMsg?: string) {
                if (errMsg) res.message = errMsg
                console.error(res)
                setError(res)
-               // TODO Handle the error as needed, e.g., show a notification (toastify)
+               toast.error(res.message || 'An error occurred')
             }
          })
       },

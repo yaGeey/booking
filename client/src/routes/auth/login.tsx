@@ -37,15 +37,6 @@ function RouteComponent() {
       window.location.href = `${import.meta.env.VITE_SERVER_URI}/oauth/discord`
    }
    async function handlePasswordReset() {
-      // TODO: as mutation
-      const res = await fetch(`${import.meta.env.VITE_SERVER_URI}/auth/reset-password`, {
-         method: 'POST',
-         body: JSON.stringify({
-            email: (document.getElementById('email') as HTMLInputElement).value,
-         }),
-         headers: { 'Content-Type': 'application/json' },
-         credentials: 'include',
-      })
       navigate({ to: '/auth/reset-password' })
    }
 

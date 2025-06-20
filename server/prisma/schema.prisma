@@ -1,4 +1,4 @@
-// TODO npx prisma migrate dev --name aboba
+// npx prisma migrate dev --name aboba
 generator client {
   provider      = "prisma-client-js"
   output        = "../generated/prisma"
@@ -30,7 +30,7 @@ model User {
   messages         Message[]
   passwordResetPin PasswordResetPin[]
   reactions        Reaction[]
-  viewedMessages   MessageViewedBy[] // TODO delete after week with cronjob
+  viewedMessages   MessageViewedBy[] // TODO TEST delete after week with cronjob
   messsageReports  MesssageReport[]
   messageForwards  MessageForward[]
 }

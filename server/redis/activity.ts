@@ -10,7 +10,7 @@ const INACTIVE_TIME = 60 * 3
 
 export async function markUserActive(id: string) {
    await redis.sadd('active_users', id)
-   await redis.set(`user:active:${id}`, '1', { ex: INACTIVE_TIME })
+   await redis.set(`user:active:${id}`, '1', { expiration: { type: 'EX', value: INACTIVE_TIME } })
 }
 
 export async function getIsUserActive(id: string) {
