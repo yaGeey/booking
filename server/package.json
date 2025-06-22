@@ -4,9 +4,8 @@
    "main": "index.ts",
    "scripts": {
       "start": "nodemon index.ts",
-      "simple-build": "tsc",
       "db:deploy": "npx prisma migrate deploy && npx prisma generate",
-      "dev": "ts-node index.ts"
+      "build": "ts-node index.ts"
    },
    "keywords": [],
    "author": "",

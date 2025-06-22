@@ -10,6 +10,7 @@ const router = Router()
 // const resend = new Resend(process.env.RESEND_API_KEY)
 const prisma = new PrismaClient()
 
+// TODO add geolocation verification and mail logged in someone from another location. so store registered location and compare it with current location
 router.get('/me', async (req, res, next) => {
    try {
       const sessionId = req.cookies.sessionId as string | undefined

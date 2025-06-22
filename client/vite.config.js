@@ -23,5 +23,6 @@ export default defineConfig({
    },
    build: {
       target: 'esnext',
+      manifest: true, // for Nginx
    }
 })

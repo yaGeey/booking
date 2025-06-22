@@ -22,7 +22,7 @@ const app = express()
 const httpServer = createServer(app)
 export const io = new Server(httpServer, {
    cors: {
-      origin: ['http://localhost:3000', 'http://192.168.0.111:3000'],
+      origin: ['http://localhost:3000', 'https://localhost', 'http://192.168.0.111:3000'],
       methods: ['GET', 'POST'],
       credentials: true,
    },
@@ -31,7 +31,7 @@ export const io = new Server(httpServer, {
 // middlewares
 app.use(
    cors({
-      origin: ['http://localhost:3000', 'http://192.168.0.111:3000'], // Домен вашого клієнта
+      origin: ['http://localhost:3000', 'https://localhost', 'http://192.168.0.111:3000'],
       credentials: true, // Дозволяє передачу cookie
    }),
 )

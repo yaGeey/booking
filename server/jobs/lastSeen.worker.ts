@@ -6,7 +6,7 @@ TODO по хорошому воркер на BullMQ, але він працює 
 було б зробити мікросервіси якийсь імпленетувати, або на окремому сервері
 */
 async function updateLastSeen() {
-   const userIds = await redis.smembers('active_users')
+   const userIds = await redis.sMembers('active_users')
    if (!Array.isArray(userIds)) return
    userIds.forEach(async (userId) => {
       if (typeof userId !== 'string') return
