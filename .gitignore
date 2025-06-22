@@ -1,0 +1,13 @@
+*/node_modules
+
+client/dist
+
+server/.env*
+server/prisma/migrations
+server/generated
+server/logs
+
+nginx/ssl.key
+nginx/ssl.crt
+
+text.txt
