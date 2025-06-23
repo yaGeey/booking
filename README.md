@@ -1,4 +1,4 @@
-### 🖥️ Сервер
+### 🖥️ Server
 - Express
 - Socket.IO
 - Prisma ORM
@@ -15,7 +15,7 @@
 - Nginx
 - GitHub Actions
 
-### Клієнт
+### Client
 - React (Vite)
 - TanStack Router
 - Tailwind CSS
