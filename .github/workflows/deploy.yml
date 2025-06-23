@@ -56,11 +56,6 @@ jobs:
             run: npm install
             working-directory: ./server
 
-         -  name: Import environment variables from a file
-            id: import-env
-            shell: bash
-            run: cat ./server/.env >> $GITHUB_ENV
-
          -  name: Start server in background
             run: npx ts-node index.ts & sleep 10
             working-directory: ./server
