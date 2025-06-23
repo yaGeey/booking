@@ -10,9 +10,6 @@ jobs:
       name: Build client
       runs-on: ubuntu-latest
 
-      env:
-         RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-
       steps:
          -  name: Checkout code
             uses: actions/checkout@v4
@@ -42,6 +39,8 @@ jobs:
    build-server:
       name: Build server
       runs-on: ubuntu-latest
+      env:
+         ENV_SERVER: ${{ secrets.ENV_SERVER }}
 
       steps:
          -  name: Checkout code
@@ -52,6 +51,10 @@ jobs:
             with:
                node-version: '22'
 
+         -  name: Create .env file from secret
+            run: echo "$ENV_SERVER" > ./server/.env
+            working-directory: ./server
+         
          -  name: Install server dependencies
             run: npm install
             working-directory: ./server
