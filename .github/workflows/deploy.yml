@@ -1,0 +1,54 @@
+name: Build Project
+
+on:
+   push:
+      branches:
+         - main
+
+jobs:
+   build-client:
+      name: Build client
+      runs-on: ubuntu-latest
+
+      steps:
+         -  name: Checkout code
+            uses: actions/checkout@v4
+
+         -  name: Setup Node.js
+            uses: actions/setup-node@v4
+            with:
+               node-version: '22'
+               cache: 'pnpm'
+
+         -  name: Install pnpm
+            run: npm install -g pnpm
+
+         -  name: Install client dependencies
+            run: pnpm install
+            working-directory: ./client
+
+         -  name: Build client
+            run: pnpm run build
+            working-directory: ./client
+
+         -  name: Upload production-ready frontend files
+            uses: actions/upload-artifact@v4
+            with:
+               name: production-files
+               path: ./client/dist
+
+   build-server:
+      name: Build server
+      runs-on: ubuntu-latest
+
+      steps:
+         -  name: Install server dependencies
+            run: npm install
+            working-directory: ./server
+
+         -  name: Start server in background
+            run: npx ts-node index.ts & sleep 10
+            working-directory: ./server
+
+         -  name: Test server is running (curl)
+            run: curl -f http://localhost:8080

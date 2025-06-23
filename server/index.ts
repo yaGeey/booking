@@ -32,7 +32,7 @@ export const io = new Server(httpServer, {
 app.use(
    cors({
       origin: ['http://localhost:3000', 'https://localhost', 'http://192.168.0.111:3000'],
-      credentials: true, // Дозволяє передачу cookie
+      credentials: true,
    }),
 )
 app.use(cookieParser())
@@ -64,6 +64,10 @@ app.use(errorMiddleware)
 io.use(authMiddleware)
 io.use(userActivityMiddleware)
 io.on('connection', onConnection)
+
+app.get('/', (req, res) => {
+   res.send('Server is running')
+})
 
 httpServer.listen(8080, () => {
    console.log('Server is running')
