@@ -10,6 +10,9 @@ jobs:
       name: Build client
       runs-on: ubuntu-latest
 
+      env:
+         RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+
       steps:
          -  name: Checkout code
             uses: actions/checkout@v4
@@ -48,10 +51,15 @@ jobs:
             uses: actions/setup-node@v4
             with:
                node-version: '22'
-               
+
          -  name: Install server dependencies
             run: npm install
             working-directory: ./server
+
+         -  name: Import environment variables from a file
+            id: import-env
+            shell: bash
+            run: cat ./server/.env >> $GITHUB_ENV
 
          -  name: Start server in background
             run: npx ts-node index.ts & sleep 10
