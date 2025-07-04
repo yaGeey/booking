@@ -1,6 +1,8 @@
+import { getAxiosErrMsg } from '@/lib/helpers'
 import { Button, TextField } from '@mui/material'
 import { useMutation } from '@tanstack/react-query'
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
+import axios, { AxiosError } from 'axios'
 
 type UserInput = {
    username: string
@@ -21,19 +23,8 @@ function RouteComponent() {
 
    const mutation = useMutation({
       mutationFn: async (userInput: UserInput) => {
-         // const res = await axios.post(`${import.meta.env.VITE_SERVER_URI}/auth/register`, data)
-         const res = await fetch(`${import.meta.env.VITE_SERVER_URI}/auth/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(userInput),
-            credentials: 'include',
-         })
-         const data = await res.json()
-         if (!res.ok) throw new Error(data.message)
+         await axios.post(`${import.meta.env.VITE_SERVER_URI}/auth/login`, userInput, { withCredentials: true })
          navigate({ to: '/' })
-      },
-      onError: (error) => {
-         console.error(error.message)
       },
    })
 
@@ -52,7 +43,7 @@ function RouteComponent() {
             <Button variant="contained" type="submit" className="mt-4" disabled={mutation.isPending}>
                Sign Up
             </Button>
-            <p className="text-red-500">{mutation.error?.message}</p>
+            <p className="text-red-500">{getAxiosErrMsg(mutation.error)}</p>
          </form>
          <Button variant="text" className="mt-4">
             <Link to="/auth/login">Sign In</Link>

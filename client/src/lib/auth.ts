@@ -1,9 +1,9 @@
 import type { User } from '@/types'
-// TODO validate normally with Result types please it's no awful
+// TODO validate normally with Result types please it's so awful. rewrite to useAxios
 
 type UserRedis = Pick<User, 'id' | 'role'>
 type RedisWithSessionId = UserRedis & { sessionId: string }
-type UserWirhSessionId = User & { sessionId: string }
+type UserWithSessionId = User & { sessionId: string }
 
 export async function logout() {
    try {
@@ -17,7 +17,7 @@ export async function logout() {
    }
 }
 
-export async function getCurrentUser(redirectIfNotAuthenticated: boolean = false): Promise<RedisWithSessionId | null> {
+export async function getUserSession(redirectIfNotAuthenticated: boolean = false): Promise<RedisWithSessionId | null> {
    try {
       const res = await fetch(`${import.meta.env.VITE_SERVER_URI}/auth/session`, {
          method: 'GET',
@@ -40,7 +40,7 @@ export async function getCurrentUser(redirectIfNotAuthenticated: boolean = false
    }
 }
 
-export async function getCurrentUserFull(redirectIfNotAuthenticated: boolean = false): Promise<UserWirhSessionId | null> {
+export async function getCurrentUser(redirectIfNotAuthenticated: boolean = false): Promise<UserWithSessionId | null> {
    try {
       const res = await fetch(`${import.meta.env.VITE_SERVER_URI}/auth/me`, {
          method: 'GET',
@@ -53,7 +53,7 @@ export async function getCurrentUserFull(redirectIfNotAuthenticated: boolean = f
          window.location.href = '/auth/login'
          return null
       }
-      return data as UserWirhSessionId
+      return data as UserWithSessionId
    } catch (error) {
       console.error(error)
       if (redirectIfNotAuthenticated) {

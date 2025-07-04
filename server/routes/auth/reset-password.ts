@@ -18,7 +18,7 @@ const pinVerificationLimiter = rateLimit({
 })
 const PIN_EXPIRATION_TIME = 60 * 60 * 1000
 
-router.post('/:email', pinVerificationLimiter, async (req, res, next) => {
+router.get('/:email', pinVerificationLimiter, async (req, res, next) => {
    try {
       const email = z.string().email().parse(req.params.email)
       // db
@@ -47,7 +47,7 @@ router.post('/:email', pinVerificationLimiter, async (req, res, next) => {
             ip: geo_data.ip,
          },
       })
-      res.json({ message: 'Email sent successfully', data: { id: user.id } })
+      res.json(user.id)
    } catch (error) {
       next(error)
    }

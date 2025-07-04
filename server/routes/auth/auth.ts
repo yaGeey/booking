@@ -1,5 +1,4 @@
 import { Router } from 'express'
-import { Resend } from 'resend'
 import { z } from 'zod'
 import { PrismaClient } from '../../generated/prisma'
 import { comparePassword, generateSalt, hashPassword } from '../../lib/auth'
@@ -7,7 +6,6 @@ import { ErrorResponse } from '../../lib/errors'
 import { createUserSession, deleteUserSession, getUserSession } from '../../redis/sessions'
 import getRandomColor from '../../utils/getRandomColor'
 const router = Router()
-// const resend = new Resend(process.env.RESEND_API_KEY)
 const prisma = new PrismaClient()
 
 // TODO add geolocation verification and mail logged in someone from another location. so store registered location and compare it with current location
@@ -32,7 +30,7 @@ router.get('/me', async (req, res, next) => {
 
       const session = await getUserSession(sessionId)
       if (!session) throw new ErrorResponse('Session not found or expired', 401)
-      
+
       const user = await prisma.user.findUnique({
          where: { id: session.id },
          select: { id: true, name: true, email: true, role: true, createdAt: true, updatedAt: true, avatar: true },
@@ -78,15 +76,16 @@ router.post('/register', async (req, res, next) => {
 
 router.post('/login', async (req, res, next) => {
    try {
+      const { email, password } = z.object({ email: z.string().email(), password: z.string() }).parse(req.body)
       const user = await prisma.user.findFirst({
          where: {
-            email: req.body.email,
+            email,
             password: { not: null },
          },
       })
       if (!user) throw new ErrorResponse('User not found', 404, { email: 'User not found' })
 
-      const isValidPassword = await comparePassword(req.body.password, user.password!, user.salt!)
+      const isValidPassword = await comparePassword(password, user.password!, user.salt!)
       if (!isValidPassword) throw new ErrorResponse('Invalid password', 401, { password: 'Invalid password' })
 
       await createUserSession({ id: user.id, role: user.role, cookie: res.cookie.bind(res) })

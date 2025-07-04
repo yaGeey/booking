@@ -1,9 +1,9 @@
-import { getCurrentUser } from '@/lib/auth'
+import { getUserSession } from '@/lib/auth'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/dashboard/')({
    component: RouteComponent,
-   loader: async () => await getCurrentUser(),
+   loader: async () => await getUserSession(),
 })
 
 function RouteComponent() {

@@ -1,24 +1,17 @@
 import Card from '@/components/room/Card'
-import { getCurrentUserFull, logout } from '@/lib/auth'
+import { getCurrentUser, logout } from '@/lib/auth'
 import type { RoomWithUsers } from '@/types'
 import { Button } from '@mui/material'
 import { Link, createFileRoute } from '@tanstack/react-router'
+import axios from 'axios'
 
 export const Route = createFileRoute('/')({
    component: App,
    loader: async () => {
-      const me = await getCurrentUserFull()
+      const me = await getCurrentUser()
       if (!me) return { me: null, rooms: [] }
-      const res = await fetch(`${import.meta.env.VITE_SERVER_URI}/rooms/my`, {
-         method: 'GET',
-         credentials: 'include',
-      })
-      if (!res.ok) {
-         const error = await res.json()
-         throw new Response(error.message, { status: res.status })
-      }
-      const rooms: RoomWithUsers[] = await res.json()
-      return { me, rooms }
+      const res = await axios.get(`${import.meta.env.VITE_SERVER_URI}/rooms/my`, { withCredentials: true })
+      return { me, rooms: res.data as RoomWithUsers[] }
    },
 })
 
@@ -27,19 +20,19 @@ function App() {
    if (!me)
       return (
          <div className="text-center">
-            <header className="min-h-screen flex flex-col items-center justify-center bg-[#282c34] text-white text-[calc(10px+2vmin)]">
+            <main className="min-h-screen flex flex-col items-center justify-center bg-[#282c34] text-white text-[calc(10px+2vmin)]">
                <Button>
                   <Link to="/auth/login">Sign In</Link>
                </Button>
                <Button>
                   <Link to="/auth/register">Sign Up</Link>
                </Button>
-            </header>
+            </main>
          </div>
       )
    return (
       <div className="text-center">
-         <header className="min-h-screen flex flex-col items-center justify-center bg-[#282c34] text-white">
+         <main className="min-h-screen flex flex-col items-center justify-center bg-[#282c34] text-white">
             <h1 className="text-lg">Welcome {me.name}</h1>
             <p>Your role: {me.role}</p>
             <Button
@@ -56,7 +49,7 @@ function App() {
                   <Card key={room.id} data={room} />
                ))}
             </ul>
-         </header>
+         </main>
       </div>
    )
 }

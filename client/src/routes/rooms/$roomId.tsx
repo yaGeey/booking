@@ -3,28 +3,24 @@ import handleMessagePaginataion from '@/components/room/MessagePagination'
 import MessageTextField from '@/components/room/MessageTextField'
 import MessageTextFieldEdit from '@/components/room/MessageTextFieldEdit'
 import { UserMessage, UserMessageLocal } from '@/components/room/UserMessage'
-import { getCurrentUserFull } from '@/lib/auth'
+import { getCurrentUser } from '@/lib/auth'
 import { socket, socketConnectDev, useSocketEmit, useSockets } from '@/socket'
 import type { MessageMerged, Message as MessageType, RoomWithUsers, ViewedBy } from '@/types'
 import { Button } from '@mui/material'
 import { createFileRoute } from '@tanstack/react-router'
+import axios from 'axios'
 import { useEffect, useRef, useState } from 'react'
 import { useImmer } from 'use-immer'
 
 export const Route = createFileRoute('/rooms/$roomId')({
    component: RouteComponent,
    loader: async ({ params }) => {
-      const me = await getCurrentUserFull()
-      const resMsgs = await fetch(`${import.meta.env.VITE_SERVER_URI}/rooms/${params.roomId}`, {
-         method: 'GET',
-         credentials: 'include',
-      })
-      if (!resMsgs.ok) {
-         const error = await resMsgs.json()
-         throw new Error(error.message)
-      }
-      const fetchedData: { room: RoomWithUsers; messages: MessageType[] } = await resMsgs.json()
-      return { me, fetchedData }
+      const me = await getCurrentUser()
+      const res = await axios.get<{ room: RoomWithUsers; messages: MessageType[] }>(
+         `${import.meta.env.VITE_SERVER_URI}/rooms/${params.roomId}`,
+         { withCredentials: true },
+      )
+      return { me, fetchedData: res.data }
    },
 })
 
@@ -38,7 +34,7 @@ function RouteComponent() {
    }
 
    const [messages, setMessages] = useImmer<Array<MessageMerged>>(
-      fetchedData.messages.reverse().map((msg: MessageType) => ({
+      fetchedData.messages.reverse().map((msg) => ({
          data: msg,
          isLocal: false,
       })),

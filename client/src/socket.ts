@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { io } from 'socket.io-client'
-import { getCurrentUser } from './lib/auth'
+import { getUserSession } from './lib/auth'
 import type { SocketResponse } from './types'
 import { toast } from 'react-toastify';
 
 // "undefined" means the URL will be computed from the `window.location` object
 // const URL = import.meta.env.NODE_ENV === 'production' ? undefined : 'http://localhost:8080'
 const URL = import.meta.env.VITE_SERVER_URI.split('/api')[0] // TODO temp
-const user = await getCurrentUser() // TODO mb tut ne treba do redisa, mb prosto z cookiesiv
+const user = await getUserSession() // TODO mb tut ne treba do redisa, mb prosto z cookiesiv
 
 export const socket = io(URL, {
    withCredentials: true,

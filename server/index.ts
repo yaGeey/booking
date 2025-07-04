@@ -27,11 +27,6 @@ export const io = new Server(httpServer, { cors: corsOptions })
 
 // middlewares
 app.use(cors(corsOptions))
-app.use((req, res, next) => {
-   res.removeHeader('Access-Control-Allow-Methods')
-   next()
-})
-app.use(cors(corsOptions)) // повторно і останнім
 // app.options('/{*any}', cors(corsOptions)) // enable pre-flight requests for all routes
 app.use(cookieParser())
 app.use(express.json())

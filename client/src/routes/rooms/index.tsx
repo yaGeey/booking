@@ -1,15 +1,13 @@
 import Card from '@/components/room/Card'
 import type { RoomWithUsers } from '@/types'
 import { createFileRoute } from '@tanstack/react-router'
+import axios from 'axios'
 
 export const Route = createFileRoute('/rooms/')({
    component: RouteComponent,
    loader: async () => {
-      const res = await fetch(`http://localhost:8080/api/rooms/my`, {
-         method: 'GET',
-         credentials: 'include',
-      })
-      return (await res.json()) as Array<RoomWithUsers>
+      const res = await axios.get(`${import.meta.env.VITE_SERVER_URI}/rooms/my`, { withCredentials: true })
+      return res.data as RoomWithUsers[]
    },
 })
 

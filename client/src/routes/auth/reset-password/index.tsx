@@ -1,3 +1,4 @@
+import useAxios from '@/hooks/useAxios'
 import { Button, TextField } from '@mui/material'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
@@ -10,61 +11,42 @@ function RouteComponent() {
    const [step, setStep] = useState('default')
    const [userId, setUserId] = useState('')
    const [error, setError] = useState<string | null>(null)
-   const [isLoading, setIsLoading] = useState(false)
    const navigate = useNavigate()
+   const { request, errorMessage, loading } = useAxios()
 
    async function handleSubmitEmail(email: string) {
-      const res = await fetch(`${import.meta.env.VITE_SERVER_URI}/auth/reset-password/${email}`, {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
-         credentials: 'include',
+      const res = await request<string>({
+         url: `/auth/reset-password/${email}`,
+         method: 'GET',
+         withCredentials: true,
       })
-      const resData = await res.json()
-      if (!res.ok) throw new Error(resData.message || 'Failed to send email')
-      setUserId(resData.data.id as string)
+      setUserId(res)
    }
 
    async function handleSubmit(rawData: FormData) {
       const data = Object.fromEntries(rawData)
-      try {
-         setIsLoading(true)
-         if (step === 'default') {
-            await handleSubmitEmail(data.email as string)
-            setStep('emailSent')
-         } else if (step === 'emailSent') {
-            if (data.pin.toString().length !== 5) throw new Error('Pin must be 5 characters long')
-
-            const res = await fetch(`${import.meta.env.VITE_SERVER_URI}/auth/reset-password/${userId}/pin`, {
-               method: 'POST',
-               body: JSON.stringify({
-                  pin: data.pin,
-               }),
-               headers: { 'Content-Type': 'application/json' },
-               credentials: 'include',
-            })
-            const resData = await res.json()
-            if (!res.ok) throw new Error(resData.message || 'Failed to validate pin')
-            setStep('pinSent')
-         } else if (step === 'pinSent') {
-            const res = await fetch(`${import.meta.env.VITE_SERVER_URI}/auth/reset-password/${userId}/new-password`, {
-               method: 'PATCH',
-               body: JSON.stringify({
-                  newPassword: data.password,
-               }),
-               headers: { 'Content-Type': 'application/json' },
-               credentials: 'include',
-            })
-            const resData = await res.json()
-            if (!res.ok) throw new Error(resData.message || 'Failed to reset password')
-            navigate({ to: '/' })
-         } else {
-            setError('Invalid step')
-         }
-      } catch (err: any) {
-         console.error(err)
-         setError(err.message || 'An error occurred')
-      } finally {
-         setIsLoading(false)
+      if (step === 'default') {
+         await handleSubmitEmail(data.email as string)
+         setStep('emailSent')
+      } else if (step === 'emailSent') {
+         if (data.pin.toString().length !== 5) throw new Error('Pin must be 5 characters long')
+         await request<string>({
+            url: `/auth/reset-password/${userId}/pin`,
+            method: 'POST',
+            data: { pin: data.pin },
+            withCredentials: true,
+         })
+         setStep('pinSent')
+      } else if (step === 'pinSent') {
+         await request<string>({
+            url: `/auth/reset-password/${userId}/new-password`,
+            method: 'PATCH',
+            data: { newPassword: data.password },
+            withCredentials: true,
+         })
+         navigate({ to: '/' })
+      } else {
+         setError('Invalid step')
       }
    }
 
@@ -90,7 +72,7 @@ function RouteComponent() {
             )}
             {step === 'pinSent' && <TextField name="password" label="new password" required size="small" type="password" />}
 
-            <Button variant="contained" type="submit" className="mt-4" disabled={isLoading}>
+            <Button variant="contained" type="submit" className="mt-4" disabled={loading}>
                {step === 'default'
                   ? 'Send email'
                   : step === 'emailSent'
@@ -99,7 +81,7 @@ function RouteComponent() {
                       ? 'Reset password'
                       : ''}
             </Button>
-            {error && <p className="text-red-500">{error}</p>}
+            {error || errorMessage ? <p className="text-red-500">{error ?? errorMessage}</p> : null}
          </form>
       </div>
    )
