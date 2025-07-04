@@ -20,6 +20,11 @@ export default defineConfig({
    },
    server: {
       host: true,
+      watch: {
+         // for hot reload in Docker
+         usePolling: true,
+         interval: 1000,
+      },
    },
    build: {
       target: 'esnext',
