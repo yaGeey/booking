@@ -11,7 +11,7 @@ const router = Router()
 const prisma = new PrismaClient()
 
 // TODO add geolocation verification and mail logged in someone from another location. so store registered location and compare it with current location
-router.get('/me', async (req, res, next) => {
+router.get('/session', async (req, res, next) => {
    try {
       const sessionId = req.cookies.sessionId as string | undefined
       if (!sessionId) throw new ErrorResponse('Unauthorized', 401)
@@ -19,18 +19,27 @@ router.get('/me', async (req, res, next) => {
       const session = await getUserSession(sessionId)
       if (!session) throw new ErrorResponse('Session not found or expired', 401)
 
-      if (req.query.getFullData && session) {
-         const user = await prisma.user.findUnique({
-            where: { id: session.id },
-            select: { id: true, name: true, email: true, role: true, createdAt: true, updatedAt: true, avatar: true },
-         })
-         if (!user) throw new ErrorResponse('User not found', 404)
-
-         res.json({ ...user, sessionId })
-         return
-      }
-
       res.json({ ...session, sessionId })
+   } catch (error) {
+      next(error)
+   }
+})
+
+router.get('/me', async (req, res, next) => {
+   try {
+      const sessionId = req.cookies.sessionId as string | undefined
+      if (!sessionId) throw new ErrorResponse('Unauthorized', 401)
+
+      const session = await getUserSession(sessionId)
+      if (!session) throw new ErrorResponse('Session not found or expired', 401)
+      
+      const user = await prisma.user.findUnique({
+         where: { id: session.id },
+         select: { id: true, name: true, email: true, role: true, createdAt: true, updatedAt: true, avatar: true },
+      })
+      if (!user) throw new ErrorResponse('User not found', 404)
+
+      res.json({ ...user, sessionId })
    } catch (error) {
       next(error)
    }

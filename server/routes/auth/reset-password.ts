@@ -1,15 +1,14 @@
 import { Router } from 'express'
 import rateLimit from 'express-rate-limit'
-import { Resend } from 'resend'
 import { z } from 'zod'
 import { PrismaClient } from '../../generated/prisma'
 import { generateSalt, hashPassword } from '../../lib/auth'
-import passwordResetEmailHtml from '../../lib/email/resendHTML'
 import { ErrorResponse } from '../../lib/errors'
+import { sendEmailJob } from '../../queue/email'
+import client from '../../redis/config'
 import { createUserSession } from '../../redis/sessions'
 const router = Router()
 const prisma = new PrismaClient()
-const resend = new Resend(process.env.RESEND_API_KEY)
 
 const pinVerificationLimiter = rateLimit({
    // TODO test this
@@ -18,15 +17,10 @@ const pinVerificationLimiter = rateLimit({
    message: 'Too many requests, please try again later.',
 })
 const PIN_EXPIRATION_TIME = 60 * 60 * 1000
-// TODO add cronjobs to delete expired pins or move to redis
 
 router.post('/:email', pinVerificationLimiter, async (req, res, next) => {
    try {
-      // get email
-      const rawEmail = req.params.email
-      const email = z.string().email().safeParse(rawEmail).success ? rawEmail : null
-      if (!email) throw new ErrorResponse('Email is required', 400)
-
+      const email = z.string().email().parse(req.params.email)
       // db
       const user = await prisma.user.findFirst({
          where: {
@@ -36,30 +30,23 @@ router.post('/:email', pinVerificationLimiter, async (req, res, next) => {
       })
       if (!user) throw new ErrorResponse('User not found', 404, { email: 'User not found' })
 
-      const pin = await prisma.passwordResetPin.create({
-         data: {
-            userId: user.id,
-            pin: (Math.random() + 1).toString(36).substring(7).toUpperCase(),
-            expiresAt: new Date(Date.now() + PIN_EXPIRATION_TIME),
-         },
-      })
+      // redis
+      const pin = (Math.random() + 1).toString(36).substring(7).toUpperCase()
+      await client.setEx(`pin:${user.id}`, PIN_EXPIRATION_TIME / 1000, pin)
 
       // send email
-      const fetch_res = await fetch(`https://ipapi.co/${req.ip}/json/`)
+      const fetch_res = await fetch(`https://ipapi.co/${req.ip}/json/`) // TODO add this to queue
       const geo_data: any = await fetch_res.json()
 
-      const { error } = await resend.emails.send({
-         from: 'onboarding@resend.dev',
-         to: email,
-         subject: 'Password reset',
-         html: passwordResetEmailHtml({
+      await sendEmailJob({
+         email: user.email,
+         data: {
             region: geo_data.region,
             user: { name: user.name, id: user.id },
-            pin: pin.pin,
-            ip: req.ip,
-         }),
+            pin,
+            ip: geo_data.ip,
+         },
       })
-      if (error) throw new ErrorResponse('Failed to send email', 500, error)
       res.json({ message: 'Email sent successfully', data: { id: user.id } })
    } catch (error) {
       next(error)
@@ -68,30 +55,22 @@ router.post('/:email', pinVerificationLimiter, async (req, res, next) => {
 
 router.post('/:userId/pin', async (req, res, next) => {
    try {
-      const userId = req.params.userId
-      const pin = req.body.pin
-      const {
-         data: body,
-         success,
-         error,
-      } = z.object({ userId: z.string(), pin: z.string().length(5) }).safeParse({ userId, pin })
-      if (!success) throw new ErrorResponse('Invalid input', 400, error.flatten().fieldErrors)
+      const rawUserId = req.params.userId
+      const rawPin = req.body.pin
+      const { rawUserId: userId, rawPin: pin } = z
+         .object({ rawUserId: z.string(), rawPin: z.string() })
+         .parse({ rawUserId, rawPin })
 
-      const passwordResetPin = await prisma.passwordResetPin.findFirst({
-         where: {
-            userId: body.userId,
-            pin: body.pin,
-            expiresAt: { gte: new Date() },
-         },
-      })
-      if (!passwordResetPin) throw new ErrorResponse('Invalid or expired PIN', 400, { pin: 'Invalid or expired PIN' })
-
-      res.cookie('validation_pin', passwordResetPin.id, {
+      const serverPin = await client.get(`pin:${userId}`)
+      if (!serverPin || pin !== serverPin.toUpperCase() || pin !== serverPin) {
+         throw new ErrorResponse('Invalid or expired PIN', 400, { pin: 'Invalid or expired PIN' })
+      }
+      res.cookie('validation_pin', serverPin, {
          httpOnly: true,
-         secure: true,
+         // secure: true,
          sameSite: 'lax',
          maxAge: PIN_EXPIRATION_TIME,
-      }).json({ message: 'PIN is valid', data: passwordResetPin })
+      }).json({ message: 'PIN is valid', data: serverPin })
    } catch (error) {
       next(error)
    }
@@ -99,35 +78,32 @@ router.post('/:userId/pin', async (req, res, next) => {
 
 router.patch('/:userId/new-password', async (req, res, next) => {
    try {
-      const userId = req.params.userId
-      const newPassword = req.body.newPassword // TODO: validate password
-      const validationPin = req.cookies.validation_pin
+      const rawUserId = req.params.userId
+      const rawNewPassword = req.body.newPassword // TODO: validate password
+      const rawValidationPin = req.cookies.validation_pin
 
       const {
-         data: body,
-         success,
-         error,
+         rawUserId: userId,
+         rawNewPassword: newPassword,
+         rawValidationPin: validationPin,
       } = z
          .object({
-            userId: z.string(),
-            newPassword: z.string(),
-            validationPin: z.string(),
+            rawUserId: z.string(),
+            rawNewPassword: z.string(),
+            rawValidationPin: z.string().length(5),
          })
-         .safeParse({ userId, newPassword, validationPin })
-      if (!success) throw new ErrorResponse('Invalid input', 400, error.flatten().fieldErrors)
+         .parse({ rawUserId, rawNewPassword, rawValidationPin })
 
       // check if user can change password
-      const passwordResetPin = await prisma.passwordResetPin.findUnique({
-         where: { id: validationPin },
-      })
-      if (!passwordResetPin) throw new ErrorResponse('Invalid request', 405)
+      const serverPin = await client.get(`pin:${userId}`)
+      if (!serverPin || serverPin !== validationPin) throw new ErrorResponse('Invalid request', 405)
 
       // change password
       const salt = generateSalt()
       const user = await prisma.user.update({
-         where: { id: body.userId },
+         where: { id: userId },
          data: {
-            password: await hashPassword(body.newPassword, salt),
+            password: await hashPassword(newPassword, salt),
             salt,
          },
       })

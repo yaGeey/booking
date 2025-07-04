@@ -2,6 +2,7 @@ import type { UserInput } from '@/types'
 import { Button, TextField } from '@mui/material'
 import { useMutation } from '@tanstack/react-query'
 import { Link, createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useState } from 'react'
 
 export const Route = createFileRoute('/auth/login')({
    component: RouteComponent,
@@ -9,6 +10,7 @@ export const Route = createFileRoute('/auth/login')({
 
 function RouteComponent() {
    const navigate = useNavigate()
+   const [email, setEmail] = useState('')
 
    const mutation = useMutation({
       mutationFn: async (userInput: Omit<UserInput, 'username'>) => {
@@ -44,7 +46,8 @@ function RouteComponent() {
       <div className="flex flex-col items-center justify-center min-h-screen">
          <form action={handleSubmit} className="flex flex-col items-center justify-center bg-gray-50 p-4 rounded-lg gap-5">
             <h1 className="text-2xl mb-4">Login</h1>
-            <TextField id="email" name="email" label="email" required size="small" type="email" />
+            <TextField id="email" name="email" label="email" required size="small" type="email" value={email}
+               onChange={(e) => setEmail(e.target.value)}/>
             <TextField name="password" label="password" required size="small" type="password" />
             <Button variant="contained" type="submit" className="mt-4" disabled={mutation.isPending}>
                Sign In

@@ -1,14 +1,6 @@
-export default function passwordResetEmailHtml({
-   region,
-   user,
-   pin,
-   ip,
-}: {
-   region: string
-   user: { name: string; id: string }
-   pin: string
-   ip?: string
-}) {
+import { EmailHTML } from "./types";
+
+export default function passwordResetEmailHtml({ region, user, pin, ip }: EmailHTML) {
    return `
    <div style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 30px;">
       <div style="max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.05);">

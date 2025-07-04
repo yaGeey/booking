@@ -1,16 +1,12 @@
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import express from 'express'
-import fs from 'fs'
 import helmet from 'helmet'
 import { createServer } from 'http'
-import morgan from 'morgan'
-import path from 'path'
 import { Server } from 'socket.io'
 import { onConnection } from './ws/index'
 import { authMiddleware, userActivityMiddleware } from './ws/middlewares'
 
-import './jobs/lastSeen.worker'
 import { errorMiddleware } from './lib/errors'
 import authRoutes from './routes/auth/auth'
 import oauthRoutes from './routes/auth/oauth'
@@ -18,23 +14,25 @@ import resetPasswordRoutes from './routes/auth/reset-password'
 import roomRoutes from './routes/rooms'
 import userRoutes from './routes/user'
 
+const corsOptions = {
+   origin: ['http://localhost:3000', 'https://localhost', 'http://192.168.0.111:3000'],
+   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+   credentials: true,
+   allowedHeaders: ['Content-Type', 'Authorization'],
+}
+
 const app = express()
 const httpServer = createServer(app)
-export const io = new Server(httpServer, {
-   cors: {
-      origin: ['http://localhost:3000', 'https://localhost', 'http://192.168.0.111:3000'],
-      methods: ['GET', 'POST'],
-      credentials: true,
-   },
-})
+export const io = new Server(httpServer, { cors: corsOptions })
 
 // middlewares
-app.use(
-   cors({
-      origin: ['http://localhost:3000', 'https://localhost', 'http://192.168.0.111:3000'],
-      credentials: true,
-   }),
-)
+app.use(cors(corsOptions))
+app.use((req, res, next) => {
+   res.removeHeader('Access-Control-Allow-Methods')
+   next()
+})
+app.use(cors(corsOptions)) // повторно і останнім
+// app.options('/{*any}', cors(corsOptions)) // enable pre-flight requests for all routes
 app.use(cookieParser())
 app.use(express.json())
 // app.use(express.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded

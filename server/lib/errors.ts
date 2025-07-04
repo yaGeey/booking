@@ -15,8 +15,12 @@ export class ErrorResponse extends Error {
 export function errorMiddleware(err: ErrorResponse | ZodError, req: Request, res: Response, next: NextFunction): void {
    if (err instanceof ZodError) {
       res.status(400).json({
-         message: err.message,
-         data: err.flatten().fieldErrors,
+         message: 'Validation failed',
+         errors: err.errors.map((e) => ({
+            path: e.path.join('.'),
+            message: e.message,
+            code: e.code,
+         })),
       })
       return
    }
